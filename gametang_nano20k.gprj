@@ -5,6 +5,7 @@
     <Version>5</Version>
     <Device name="GW2AR-18C" pn="GW2AR-LV18QN88C8/I7">gw2ar18c-000</Device>
     <FileList>
+        <File path="src/ACP_MMIO_Registers.v" type="file.verilog" enable="1"/>
         <File path="src/BSROM_Mapper.v" type="file.verilog" enable="1"/>
         <File path="src/BusControlUnit.v" type="file.verilog" enable="1"/>
         <File path="src/GPPRAM_2KB.v" type="file.verilog" enable="1"/>

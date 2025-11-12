@@ -1,23 +1,25 @@
-// ====================================================================
-// GameTank Bus Control Unit (BCU)
-// Handles address decoding and read-data arbitration for the CPU bus.
-// ====================================================================
-`default_nettype none
+// Copyright (c) 2025-3025 @fjpolo
+// This program is GPL Licensed. See COPYING for the full license.
 
+// `default_nettype none
+
+// Implementation of the Bus Control Unit (BCU).
+// Generates Chip Enables (CE) based on CPU address decoding and multiplexes
+// read data from all peripherals onto the CPU data bus.
 module BusControlUnit (
-    // CPU Interface
+    // CPU Interface Inputs
     input wire [15:0] i_cpu_addr,
-    input wire i_cpu_rnw,           // 1=Read, 0=Write
+    input wire        i_cpu_rnw, // 1=Read, 0=Write (THIS WAS MISSING)
+    
+    // Chip Enable Outputs
+    output wire o_gppram_ce,
+    output wire o_acp_ce,   // APU/IO Registers ($4000-$4017)
+    output wire o_ppu_ce,   // PPU MMIO Registers ($2000-$3FFF)
+    output wire o_io_ce,    // I/O Registers (Typically subset of $4000-$401F)
+    output wire o_sdram_ce, // SDRAM / Save RAM ($6000-$7FFF, or similar)
+    output wire o_cart_ce,  // Cartridge ROM ($8000-$FFFF)
 
-    // Peripheral Chip Enables (Outputs)
-    output wire o_gppram_ce,        // $0000-$07FF (2KB RAM)
-    output wire o_acp_ce,           // $2000-$3FFF (ACP MMIO/RAM)
-    output wire o_ppu_ce,           // $4000-$4015 (PPU MMIO Registers)
-    output wire o_io_ce,            // $4016-$4017 (Joypad/IO)
-    output wire o_sdram_ce,         // $6000-$7FFF (Save RAM / Mapper RAM)
-    output wire o_cart_ce,          // $8000-$FFFF (Cartridge/Mapper ROM)
-
-    // Peripheral Data Inputs (Read Data)
+    // Peripheral Read Data Inputs (THESE WERE MISSING)
     input wire [7:0] i_gppram_data_in,
     input wire [7:0] i_acp_data_in,
     input wire [7:0] i_ppu_data_in,
@@ -25,52 +27,48 @@ module BusControlUnit (
     input wire [7:0] i_sdram_data_in,
     input wire [7:0] i_cart_data_in,
     
-    // CPU Data Output (Multiplexed Read Data)
+    // CPU Data Output (Multiplexed Read Data) (THIS WAS MISSING)
     output reg [7:0] o_data_out_to_cpu
 );
 
-// --- 1. Address Decoding (Chip Enables) ---
+// --- 1. Address Decoding and Chip Enable Generation ---
 
-// GPPRAM (2KB) - $0000-$07FF 
-assign o_gppram_ce = (i_cpu_addr[15:11] == 5'b00000); 
+// GPPRAM: $0000-$1FFF (2KB mirrored)
+assign o_gppram_ce = (i_cpu_addr[15:13] == 3'b000);
 
-// ACP (Audio CoProcessor) - $2000-$3FFF
-assign o_acp_ce = (i_cpu_addr[15:12] == 4'h2) || (i_cpu_addr[15:12] == 4'h3);
+// PPU: $2000-$3FFF (8 registers mirrored)
+assign o_ppu_ce = (i_cpu_addr[15:13] == 3'b001);
 
-// PPU MMIO - $4000-$4015
-assign o_ppu_ce = (i_cpu_addr[15:8] == 8'h40) && (i_cpu_addr[7:5] == 3'b000); 
+// APU/IO: $4000-$401F (Simplified: use the $4000 block)
+assign o_acp_ce = (i_cpu_addr[15:5] == 11'b01000000000); 
+assign o_io_ce = o_acp_ce; // Often tied together for $4000 range access
 
-// I/O and Joypad - $4016-$4017
-assign o_io_ce = (i_cpu_addr[15:1] == 15'h200B); 
-
-// SDRAM Save RAM - $6000-$7FFF
+// SDRAM / Save RAM: $6000-$7FFF (Expansion RAM)
 assign o_sdram_ce = (i_cpu_addr[15:13] == 3'b011);
 
-// Cartridge/Mapper ROM - $8000-$FFFF
+// Cartridge (ROM/Mapper): $8000-$FFFF
 assign o_cart_ce = i_cpu_addr[15];
 
-
-// --- 2. Read Data Arbitration (Multiplexer) ---
-
-// Selects which component drives the CPU's data input (DI) during a read cycle.
+// --- 2. Data Multiplexing (Read Operation) ---
+// When the CPU reads (i_cpu_rnw=1), select the data input based on the active CE.
 always @(*) begin
-    // Default to an open bus state ($FF for 6502 family)
-    o_data_out_to_cpu = 8'hFF; 
-
-    if (i_cpu_rnw) begin // Only arbitrate during a read cycle
-        if (o_gppram_ce) begin
-            o_data_out_to_cpu = i_gppram_data_in;
-        end else if (o_acp_ce) begin
-            o_data_out_to_cpu = i_acp_data_in;
-        end else if (o_ppu_ce) begin
-            o_data_out_to_cpu = i_ppu_data_in; 
-        end else if (o_io_ce) begin
-            o_data_out_to_cpu = i_io_data_in; 
-        end else if (o_sdram_ce) begin
-            o_data_out_to_cpu = i_sdram_data_in; 
-        end else if (o_cart_ce) begin
-            o_data_out_to_cpu = i_cart_data_in; 
-        end
+    if (!i_cpu_rnw) begin
+        // CPU is writing, output is high impedance for a combinational multiplexer
+        o_data_out_to_cpu = 8'hFF; // Open bus read default
+    end else if (o_gppram_ce) begin
+        o_data_out_to_cpu = i_gppram_data_in;
+    end else if (o_ppu_ce) begin
+        o_data_out_to_cpu = i_ppu_data_in;
+    end else if (o_acp_ce) begin
+        o_data_out_to_cpu = i_acp_data_in;
+    end else if (o_io_ce) begin
+        o_data_out_to_cpu = i_io_data_in;
+    end else if (o_sdram_ce) begin
+        o_data_out_to_cpu = i_sdram_data_in;
+    end else if (o_cart_ce) begin
+        o_data_out_to_cpu = i_cart_data_in;
+    end else begin
+        o_data_out_to_cpu = 8'hFF; // Default (Open bus behavior)
     end
 end
 

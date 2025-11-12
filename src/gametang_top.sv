@@ -4,6 +4,7 @@
 //
 
 // `timescale 1ns / 100ps
+`define CONTROLLER_SNES
 
 import configPackage::*;
 
@@ -15,7 +16,7 @@ module gametang_top (
     input reset2,
 
     // UART
-    input UART_RXD,
+    input  UART_RXD,
     output UART_TXD,
 
     // SDRAM - Tang SDRAM pmod 1.2 for primer 25k, on-chip 32-bit 8MB SDRAM for nano 20k
@@ -29,7 +30,6 @@ module gametang_top (
     output [SDRAM_ROW_WIDTH-1:0] O_sdram_addr,     // multiplexed address bus
     output [1:0] O_sdram_ba,        // two banks
     output [SDRAM_DATA_WIDTH/8-1:0] O_sdram_dqm,  
-
 `ifdef LED2
     // LEDs
     output [1:0] led,
@@ -37,9 +37,8 @@ module gametang_top (
     // LEDs
     output [7:0] led,
 `endif
-
-`ifdef CONTROLLER_GAMETANK
-    // snes controllers
+`ifdef CONTROLLER_SNES
+    // sgametank controllers
     output joy1_strb,
     output joy1_clk,
     input joy1_data,
@@ -47,29 +46,6 @@ module gametang_top (
     output joy2_clk,
     input joy2_data,
 `endif
-
-`ifdef CONTROLLER_DS2
-    // dualshock controllers
-    output ds_clk,
-    input ds_miso,
-    output ds_mosi,
-    output ds_cs,
-    output ds_clk2,
-    input ds_miso2,
-    output ds_mosi2,
-    output ds_cs2,
-`endif
-
-`ifdef USB1
-    // USB1 and USB2
-    inout usb1_dp,
-    inout usb1_dn,
-`endif
-`ifdef USB2
-    inout usb2_dp,
-    inout usb2_dn,
-`endif
-
     // HDMI TX
     output       tmds_clk_n,
     output       tmds_clk_p,
@@ -136,6 +112,54 @@ wire        rv_req_ack;
 wire [15:0] rv_dout;
 reg [1:0]   rv_ds;
 reg         rv_new_req;
+wire sys_reset_n = ~reset2;
+iosys_picorv32 #(
+    .FREQ(21_477_000),
+    .COLOR_LOGO(15'b00000_10101_00000),
+    .CORE_ID(1)      // 1: gametang, 2: sgametang
+)
+i_iosys(
+    .clk(sys_clk),                      // SNES mclk
+    .hclk(fclk),                     // hdmi clock
+    .resetn(sys_reset_n),
+    // OSD display interface
+    .overlay,
+    .overlay_x(),         // 720p
+    .overlay_y(),
+    .overlay_color(),    // BGR5, [15] is opacity
+    .joy1(),              // joystick 1: (R L X A RT LT DN UP START SELECT Y B)
+    .joy2(),              // joystick 2
+    // ROM loading interface
+    .rom_loading(),         // 0-to-1 loading starts, 1-to-0 loading is finished
+    .rom_do(),            // first 64 bytes are snes header + 32 bytes after snes header 
+    .rom_do_valid(),        // strobe for rom_do
+    // 32-bit wide memory interface for risc-v softcore
+    // 0x_xxxx~6x_xxxx is RV RAM, 7x_xxxx is BSRAM
+    .rv_valid(),                // 1: active memory access
+    .rv_ready(),                 // pulse when access is done
+    .rv_addr(),          // 8MB memory space
+    .rv_wdata(),         // 32-bit write data
+    .rv_wstrb(),          // 4 byte write strobe
+    .rv_rdata(),          // 32-bit read data
+    .ram_busy(),                 // iosys starts after SDRAM initialization
+    // SPI flash
+    .flash_spi_cs_n(),          // chip select
+    .flash_spi_miso(),          // master in slave out
+    .flash_spi_mosi(),          // mster out slave in
+    .flash_spi_clk(),           // spi clock
+    .flash_spi_wp_n(),          // write protect
+    .flash_spi_hold_n(),        // hold operations
+    // UART
+    .uart_rx(),
+    .uart_tx(),
+    // SD card
+    .sd_clk(),
+    .sd_cmd(),                  // MOSI
+    .sd_dat0(),                 // MISO
+    .sd_dat1(),                 // 1
+    .sd_dat2(),                 // 1
+    .sd_dat3()                  // 0 for SPI mode
+);
 
 // Controller
 wire [7:0] joy_rx[0:1], joy_rx2[0:1];     // 6 RX bytes for all button/axis state
@@ -159,26 +183,6 @@ wire GAMETANK_gamepad_data_available;
 wire [7:0]GAMETANK_gamepad_button_state2;
 wire GAMETANK_gamepad_data_available2;
 
-// Loader
-wire [21:0] loader_addr;
-wire [7:0] loader_write_data;
-reg loading_r;
-always @(posedge clk) loading_r <= loading;
-wire loader_reset = loading & ~loading_r;
-wire loader_write;
-wire [63:0] loader_flags;
-reg  [63:0] mapper_flags;
-wire loader_done, loader_fail;
-wire loader_busy, loaded;
-wire type_gametank = 1'b1;  // (menu_index == 0) || (menu_index == {2'd0, 6'h1});
-wire type_bios = 1'b0; // (menu_index == 2);
-wire is_bios = 0;      //type_bios;
-wire type_fds = 1'b0;  // (menu_index == {2'd1, 6'h1});
-wire type_nsf = 1'b0;  // (menu_index == {2'd2, 6'h1});
-
-wire int_audio;         // for VCR6
-wire ext_audio;
-
 ///////////////////////////
 // Clocks
 ///////////////////////////
@@ -198,8 +202,6 @@ always @(posedge clk) begin
 //    if (reset_cnt == 0 && s1)     // for nano
         sys_resetn <= ~(joy1_btns[5] && joy1_btns[2]);    // 8BitDo Home button = Select + Down
 end
-
-`ifndef VERILATOR
 
 `ifdef PLL_R
 // Nano uses rPLL and 27Mhz crystal
@@ -223,68 +225,40 @@ CLKDIV #(.DIV_MODE(5)) div5 (
     .CALIB(1'b0)
 );
 
-`else   // verilator
-
-// dummy clocks for verilator
-assign clk = sys_clk;
-assign fclk = sys_clk;
-
-`endif  // verilator
-
 wire [31:0] status;
 
 
-// Main GAMETANK machine
-GAMETANK gametank(
-    .clk(clk), .reset_gametank(reset_gametank), .cold_reset(1'b0),
-    .sys_type(system_type), .gametank_div(gametank_ce),
-    .mapper_flags(mapper_flags),
-    .sample(sample), .color(color),
-    .joypad_out(joypad_out), .joypad_clock(joypad_clock), 
-    .joypad1_data(joypad1_data), .joypad2_data(joypad2_data),
+// // Main GAMETANK machine
+//GAMETANK gametank(
+//    .clk(clk), .reset_gametank(reset_gametank), .cold_reset(1'b0),
+//    .sys_type(system_type), .gametank_div(gametank_ce),
+//    .mapper_flags(mapper_flags),
+//    .sample(sample), .color(color),
+//    .joypad_out(joypad_out), .joypad_clock(joypad_clock), 
+//    .joypad1_data(joypad1_data), .joypad2_data(joypad2_data),
 
-    .fds_busy(), .fds_eject(), .diskside_req(), .diskside(),        // disk system
-    .audio_channels(5'b11111),  // enable all channels
-    
-    .cpumem_addr(memory_addr_cpu),
-    .cpumem_read(memory_read_cpu),
-    .cpumem_din(memory_din_cpu),
-    .cpumem_write(memory_write_cpu),
-    .cpumem_dout(memory_dout_cpu),
-    .ppumem_addr(memory_addr_ppu),
-    .ppumem_read(memory_read_ppu),
-    .ppumem_write(memory_write_ppu),
-    .ppumem_din(memory_din_ppu),
-    .ppumem_dout(memory_dout_ppu),
+//    .fds_busy(), .fds_eject(), .diskside_req(), .diskside(),        // disk system
+//    .audio_channels(5'b11111),  // enable all channels
+//    
+//    .cpumem_addr(memory_addr_cpu),
+//    .cpumem_read(memory_read_cpu),
+//    .cpumem_din(memory_din_cpu),
+//    .cpumem_write(memory_write_cpu),
+//    .cpumem_dout(memory_dout_cpu),
+//    .ppumem_addr(memory_addr_ppu),
+//    .ppumem_read(memory_read_ppu),
+//    .ppumem_write(memory_write_ppu),
+//    .ppumem_din(memory_din_ppu),
+//    .ppumem_dout(memory_dout_ppu),
 
-    .bram_addr(), .bram_din(), .bram_dout(), .bram_write(), .bram_override(),
+//    .bram_addr(), .bram_din(), .bram_dout(), .bram_write(), .bram_override(),
 
-    .cycle(cycle), .scanline(scanline),
-    .int_audio(int_audio),    // VRC6
-    .ext_audio(ext_audio),
+//    .cycle(cycle), .scanline(scanline),
+//    .int_audio(int_audio),    // VRC6
+//    .ext_audio(ext_audio),
 
-    .apu_ce(), .gg(), .gg_code(), .gg_avail(), .gg_reset(), .emphasis(), .save_written()
-);
-
-// loader_write -> clock when data available
-reg loader_write_mem;
-reg [7:0] loader_write_data_mem;
-reg [21:0] loader_addr_mem;
-reg loader_write_r;
-
-always @(posedge clk) begin
-    loader_write_mem <= 0;
-    loader_write_r <= loader_write;
-
-    loader_write_mem <= loader_write || loader_write_r;   // width 2
-	if (loader_write) begin
-		loader_addr_mem <= loader_addr;
-		loader_write_data_mem <= loader_write_data;
-	end
-
-    if (loader_done)
-        mapper_flags <= loader_flags;
-end
+//    .apu_ce(), .gg(), .gg_code(), .gg_avail(), .gg_reset(), .emphasis(), .save_written()
+//);
 
 // From sdram_gametank.v or sdram_sim.v
 sdram_gametank sdram (
@@ -314,45 +288,9 @@ sdram_gametank sdram (
 `endif
 );
 
-// ROM parser
-GameLoader loader(
-    .clk(clk), .reset(~sys_resetn | loader_reset), .downloading(loading), 
-    .filetype({4'b0000, type_nsf, type_fds, type_gametank, type_bios}),
-    .is_bios(is_bios), .invert_mirroring(1'b0),
-    .indata(loader_do), .indata_clk(loader_do_valid),
-
-    .mem_addr(loader_addr), .mem_data(loader_write_data), .mem_write(loader_write),
-    .bios_download(),
-    .mapper_flags(loader_flags), .busy(loader_busy), .done(loader_done),
-    .error(loader_fail), .rom_loaded()
-);
-
-assign int_audio = 1;
-assign ext_audio = (mapper_flags[7:0] == 19) | (mapper_flags[7:0] == 24) | (mapper_flags[7:0] == 26);
-
-always @(posedge clk) begin
-    clkref <= ~clkref;
-    if (~loading && loading_r) begin
-        reset_gametank <= 0;
-        clkref <= 1;
-    end else if (loading && ~loading_r)
-        reset_gametank <= 1;
-    if (~sys_resetn)
-        reset_gametank <= 1;
-end
-
 ///////////////////////////
 // Peripherals
 ///////////////////////////
-
-`ifdef VERILATOR
-
-// For verilator, the only peripheral is the compiled-in game data 
-GameData game_data(
-    .clk(clk), .reset(~sys_resetn), .downloading(loading), 
-    .odata(loader_do), .odata_clk(loader_do_valid));
-
-`else
 
 // For physical board, there's HDMI, iosys, joypads, and USB
 wire overlay;                   // iosys controls overlay
@@ -373,68 +311,29 @@ gametank2hdmi u_hdmi (     // purple: RGB=440064 (010001000_00000000_01100100), 
 );
 
 
-// Connect to BL616 companion MCU for sys module for menu, rom loading...
-iosys_bl616 #(.COLOR_LOGO(15'b01100_00000_01000), .FREQ(21_492_000), .CORE_ID(1) )     // purple gametang logo
-    sys_inst (
-    .clk(clk), .hclk(hclk), .resetn(sys_resetn),
+// // Connect to BL616 companion MCU for sys module for menu, rom loading...
+// iosys_bl616 #(.COLOR_LOGO(15'b01100_00000_01000), .FREQ(21_492_000), .CORE_ID(1) )     // purple gametang logo
+//     sys_inst (
+//     .clk(clk), .hclk(hclk), .resetn(sys_resetn),
 
-    .overlay(overlay), .overlay_x(overlay_x), .overlay_y(overlay_y), .overlay_color(overlay_color),
-    .joy1(joy1_btns | joy_usb1), .joy2(joy2_btns | joy_usb2),
-    .hid1(hid1), .hid2(hid2),
-    .uart_tx(UART_TXD), .uart_rx(UART_RXD),
+//     .overlay(overlay), .overlay_x(overlay_x), .overlay_y(overlay_y), .overlay_color(overlay_color),
+//     .joy1(joy1_btns | joy_usb1), .joy2(joy2_btns | joy_usb2),
+//     .hid1(hid1), .hid2(hid2),
+//     .uart_tx(UART_TXD), .uart_rx(UART_RXD),
 
-    .rom_loading(loading), .rom_do(loader_do), .rom_do_valid(loader_do_valid)
-);
+//     .rom_loading(loading), .rom_do(loader_do), .rom_do_valid(loader_do_valid)
+// );
 
 // Controller input
-`ifdef CONTROLLER_GAMETANK
-controller_snes joy1_snes (
+`ifdef CONTROLLER_SNES
+controller_snes joy1_sgametank (
     .clk(clk), .resetn(sys_resetn), .buttons(joy1_btns),
     .joy_strb(joy1_strb), .joy_clk(joy1_clk), .joy_data(joy1_data)
 );
-controller_snes joy2_snes (
+controller_snes joy2_sgametank (
     .clk(clk), .resetn(sys_resetn), .buttons(joy2_btns),
     .joy_strb(joy2_strb), .joy_clk(joy2_clk), .joy_data(joy2_data)
 );
-`endif
-
-`ifdef CONTROLLER_DS2
-controller_ds2 joy1_ds2 (
-    .clk(clk), .snes_buttons(joy1_btns),
-    .ds_clk(ds_clk), .ds_miso(ds_miso), .ds_mosi(ds_mosi), .ds_cs(ds_cs) 
-);
-controller_ds2 joy2_ds2 (
-   .clk(clk), .snes_buttons(joy2_btns),
-   .ds_clk(ds_clk2), .ds_miso(ds_miso2), .ds_mosi(ds_mosi2), .ds_cs(ds_cs2) 
-);
-`endif
-
-`ifdef USB1
-wire clk12;
-wire pll_lock_12;
-wire usb_conerr;
-wire [1:0] usb_type;
-pll_12 pll12(.clkin(sys_clk), .clkout0(clk12), .lock(pll_lock_12));
-usb_hid_host usb_hid_host (
-    .usbclk(clk12), .usbrst_n(pll_lock_12),
-    .usb_dm(usb1_dn), .usb_dp(usb1_dp),
-    .game_snes(joy_usb1), .typ(usb_type), .conerr(usb_conerr)
-);
-`else
-assign joy_usb1 = 12'b0;
-`endif
-
-`ifdef USB2
-wire usb_conerr2;
-wire [1:0] usb_type2;
-usb_hid_host usb_hid_host2 (
-    .usbclk(clk12), .usbrst_n(pll_lock_12),
-    .usb_dm(usb2_dn), .usb_dp(usb2_dp),
-    .game_snes(joy_usb2), .typ(usb_type2), .conerr(usb_conerr2)
-);
-assign led = ~{joy_usb2[1:0], usb_type2, usb_conerr2, usb_type, usb_conerr};
-`else
-assign joy_usb2 = 12'b0;
 `endif
 
 // Autofire for GAMETANK A (right) and B (left) buttons
@@ -457,14 +356,5 @@ always @(posedge clk) begin
 end
 assign joypad1_data[0] = joypad_bits[0];
 assign joypad2_data[0] = joypad_bits2[0];
-
-`endif
-
-//assign led = ~{~UART_RXD, loader_done};
-//assign led = ~{~UART_RXD, usb_conerr, loader_done};
-
-reg [23:0] led_cnt;
-always @(posedge clk) led_cnt <= led_cnt + 1;
-//assign led = {led_cnt[23], led_cnt[22]};
 
 endmodule

@@ -48,15 +48,15 @@ wire [6:0] text_char = reg_char_di[6:0];
 // $000-$37F: Character buffer RAM (32*28)
 // $380-$3FF: Logo ROM (14*9 bytes)
 // $400-$800: Font ROM
-gowin_dpb_menu menu_mem (
-    .clka(clk), .reseta(1'b0), .ocea(), .cea(1'b1), 
-    .ada({1'b0, text_y, text_x}), .wrea(reg_char_we[0] && cmd == 2'd0),
-    .dina({1'b0, text_char}), .douta(), 
+//gowin_dpb_menu menu_mem (
+//    .clka(clk), .reseta(1'b0), .ocea(), .cea(1'b1), 
+//    .ada({1'b0, text_y, text_x}), .wrea(reg_char_we[0] && cmd == 2'd0),
+//    .dina({1'b0, text_char}), .douta(), 
 
-    .clkb(hclk), .resetb(1'b0), .oceb(), .ceb(1'b1), 
-    .adb(mem_addr_b), .wreb(1'b0), 
-    .dinb(), .doutb(mem_do_b)
-);
+//    .clkb(hclk), .resetb(1'b0), .oceb(), .ceb(1'b1), 
+//    .adb(mem_addr_b), .wreb(1'b0), 
+//    .dinb(), .doutb(mem_do_b)
+//);
 
 reg [6:0] logo_addr;
 reg [2:0] logo_xoff;

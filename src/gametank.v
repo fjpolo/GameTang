@@ -332,29 +332,29 @@ wire apu_cs = addr >= 'h4000 && addr < 'h4018;
 wire [7:0] apu_dout;
 wire [15:0] sample_apu;
 
-APU apu(
-	.MMC5           (1'b0),
-	.clk            (clk),
-	.PHI2           (phi2),
-	.CS             (apu_cs),
-	.PAL            (sys_type[0]),
-	.ce             (apu_ce),
-	.reset          (reset),
-	.cold_reset     (cold_reset),
-	.ADDR           (addr[4:0]),
-	.DIN            (dbus),
-	.DOUT           (apu_dout),
-	.RW             (cpu_rnw),
-	.audio_channels (audio_channels),
-	.Sample         (sample_apu),
-	.DmaReq         (apu_dma_request),
-	.DmaAck         (apu_dma_ack),
-	.DmaAddr        (apu_dma_addr),
-	.DmaData        (from_data_bus),
-	.odd_or_even    (odd_or_even),
-	.IRQ            (apu_irq),
-	.allow_us(1'b0)
-);
+//APU apu(
+//	.MMC5           (1'b0),
+//	.clk            (clk),
+//	.PHI2           (phi2),
+//	.CS             (apu_cs),
+//	.PAL            (sys_type[0]),
+//	.ce             (apu_ce),
+//	.reset          (reset),
+//	.cold_reset     (cold_reset),
+//	.ADDR           (addr[4:0]),
+//	.DIN            (dbus),
+//	.DOUT           (apu_dout),
+//	.RW             (cpu_rnw),
+//	.audio_channels (audio_channels),
+//	.Sample         (sample_apu),
+//	.DmaReq         (apu_dma_request),
+//	.DmaAck         (apu_dma_ack),
+//	.DmaAddr        (apu_dma_addr),
+//	.DmaData        (from_data_bus),
+//	.odd_or_even    (odd_or_even),
+//	.IRQ            (apu_irq),
+//	.allow_us(1'b0)
+//);
 
 assign sample = sample_a;
 reg [15:0] sample_a;

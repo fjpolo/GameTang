@@ -1,6 +1,6 @@
 
 module dpram #(
-    parameter widthad_a,
+    parameter widthad_a = 8,
     parameter width_a = 8
 ) (
     input [widthad_a-1:0] address_a,

@@ -13,7 +13,7 @@
         <File path="src/cart.sv" type="file.verilog" enable="1"/>
         <File path="src/compat.v" type="file.verilog" enable="1"/>
         <File path="src/controller_ds2.sv" type="file.verilog" enable="1"/>
-        <File path="src/controller_sgametank.v" type="file.verilog" enable="1"/>
+        <File path="src/controller_snes.v" type="file.verilog" enable="1"/>
         <File path="src/dpram.v" type="file.verilog" enable="1"/>
         <File path="src/dualshock_controller.v" type="file.verilog" enable="1"/>
         <File path="src/game_loader.v" type="file.verilog" enable="1"/>
@@ -57,7 +57,7 @@
         <File path="src/usb_hid_host_rom.v" type="file.verilog" enable="1"/>
         <File path="src/console60k/gametang.cst" type="file.cst" enable="1"/>
         <File path="src/primer25k/gametang.cst" type="file.cst" enable="0"/>
-        <File path="src/primer25k/gametang_sgametankcontroller.cst" type="file.cst" enable="0"/>
+        <File path="src/primer25k/gametang_snescontroller.cst" type="file.cst" enable="0"/>
         <File path="src/primer25k/gametang.sdc" type="file.sdc" enable="1"/>
         <File path="src/gametank.gao" type="file.gao" enable="0"/>
         <File path="src/gametang_console60k.rao" type="file.gao" enable="0"/>

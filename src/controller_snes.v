@@ -1,5 +1,5 @@
 // A self-scanning SNES/GAMETANK controller interface
-module controller_sgametank #(
+module controller_snes #(
     parameter FREQ = 21_500_000         // frequency of clk
 )(
     input clk,
@@ -16,7 +16,7 @@ module controller_sgametank #(
 
 /*
 
-https://gamefaqs.gamespot.com/sgametank/916396-super-nintendo/faqs/5395
+https://gamefaqs.gamespot.com/snes/916396-super-nintendo/faqs/5395
 
        ----------------------------- ---------------------
       |                             |                      \

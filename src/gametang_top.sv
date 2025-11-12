@@ -39,7 +39,7 @@ module gametang_top (
 `endif
 
 `ifdef CONTROLLER_GAMETANK
-    // sgametank controllers
+    // snes controllers
     output joy1_strb,
     output joy1_clk,
     input joy1_data,
@@ -388,11 +388,11 @@ iosys_bl616 #(.COLOR_LOGO(15'b01100_00000_01000), .FREQ(21_492_000), .CORE_ID(1)
 
 // Controller input
 `ifdef CONTROLLER_GAMETANK
-controller_sgametank joy1_sgametank (
+controller_snes joy1_snes (
     .clk(clk), .resetn(sys_resetn), .buttons(joy1_btns),
     .joy_strb(joy1_strb), .joy_clk(joy1_clk), .joy_data(joy1_data)
 );
-controller_sgametank joy2_sgametank (
+controller_snes joy2_snes (
     .clk(clk), .resetn(sys_resetn), .buttons(joy2_btns),
     .joy_strb(joy2_strb), .joy_clk(joy2_clk), .joy_data(joy2_data)
 );
@@ -400,11 +400,11 @@ controller_sgametank joy2_sgametank (
 
 `ifdef CONTROLLER_DS2
 controller_ds2 joy1_ds2 (
-    .clk(clk), .sgametank_buttons(joy1_btns),
+    .clk(clk), .snes_buttons(joy1_btns),
     .ds_clk(ds_clk), .ds_miso(ds_miso), .ds_mosi(ds_mosi), .ds_cs(ds_cs) 
 );
 controller_ds2 joy2_ds2 (
-   .clk(clk), .sgametank_buttons(joy2_btns),
+   .clk(clk), .snes_buttons(joy2_btns),
    .ds_clk(ds_clk2), .ds_miso(ds_miso2), .ds_mosi(ds_mosi2), .ds_cs(ds_cs2) 
 );
 `endif
@@ -418,7 +418,7 @@ pll_12 pll12(.clkin(sys_clk), .clkout0(clk12), .lock(pll_lock_12));
 usb_hid_host usb_hid_host (
     .usbclk(clk12), .usbrst_n(pll_lock_12),
     .usb_dm(usb1_dn), .usb_dp(usb1_dp),
-    .game_sgametank(joy_usb1), .typ(usb_type), .conerr(usb_conerr)
+    .game_snes(joy_usb1), .typ(usb_type), .conerr(usb_conerr)
 );
 `else
 assign joy_usb1 = 12'b0;
@@ -430,7 +430,7 @@ wire [1:0] usb_type2;
 usb_hid_host usb_hid_host2 (
     .usbclk(clk12), .usbrst_n(pll_lock_12),
     .usb_dm(usb2_dn), .usb_dp(usb2_dp),
-    .game_sgametank(joy_usb2), .typ(usb_type2), .conerr(usb_conerr2)
+    .game_snes(joy_usb2), .typ(usb_type2), .conerr(usb_conerr2)
 );
 assign led = ~{joy_usb2[1:0], usb_type2, usb_conerr2, usb_type, usb_conerr};
 `else

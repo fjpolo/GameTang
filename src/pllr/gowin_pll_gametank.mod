@@ -5,8 +5,8 @@
 -part_number GW2AR-LV18QN88C8/I7
 
 
--mod_name gowin_pll_nes
--file_name gowin_pll_nes
+-mod_name gowin_pll_gametank
+-file_name gowin_pll_gametank
 -path D:/Gowin/dev/gametang/src/tang_nano_20k/
 -type PLL
 -rPll true

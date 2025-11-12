@@ -51,7 +51,7 @@ module iosys_picorv32 #(
 
     // ROM loading interface
     output reg rom_loading,         // 0-to-1 loading starts, 1-to-0 loading is finished
-    output [7:0] rom_do,            // first 64 bytes are snes header + 32 bytes after snes header 
+    output [7:0] rom_do,            // first 64 bytes are sgametank header + 32 bytes after sgametank header 
     output reg rom_do_valid,        // strobe for rom_do
     
     // 32-bit wide memory interface for risc-v softcore

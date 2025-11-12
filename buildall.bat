@@ -9,9 +9,9 @@ echo.
 if %errorlevel% neq 0 exit /b %errorlevel%
 
 @REM echo.
-@REM echo ============ Building primer25k with snes/nes controller ===============
+@REM echo ============ Building primer25k with sgametank/gametank controller ===============
 @REM echo.
-@REM %GWSH% build.tcl primer25k snes
+@REM %GWSH% build.tcl primer25k sgametank
 
 echo.
 echo ============ Building primer25k with ds2 controller ===============

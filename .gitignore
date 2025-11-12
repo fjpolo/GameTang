@@ -1,5 +1,5 @@
 *.o
 impl
-nes.gprj.user
+gametank.gprj.user
 
 *.vcd

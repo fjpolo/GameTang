@@ -5,9 +5,9 @@
 -part_number GW5A-LV25MG121NC1/I0
 
 
--mod_name gowin_pll_nes
--file_name gowin_pll_nes
--path D:/Gowin/dev/nes-experiments/01.sdram_nes/src/primer25k/
+-mod_name gowin_pll_gametank
+-file_name gowin_pll_gametank
+-path D:/Gowin/dev/gametank-experiments/01.sdram_gametank/src/primer25k/
 -type PLL_ADV
 -file_type vlg
 -ssc false

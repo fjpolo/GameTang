@@ -3,7 +3,7 @@
 `define MEGA60K
 `define PRIMER
 
-`define CONTROLLER_SNES
+`define CONTROLLER_GAMETANK
 
 package configPackage;  
 

@@ -1,7 +1,7 @@
 
 # Wiring instructions for GAMETang
 
-This is for wiring the HDMI Pmod module (Muse-Lab PMOD-HDMI 1.0) to Tang Primer 20K. The module *almost* worked directly in the PMod sockets. The only thing off is the polarity of the data lanes. Alas, we therefore still need to connect it with dupont wires.
+This is for wiring the HDMI Pmod module (Muse-Lab PMOD-HDMI 1.0) to Tang Primer 20K. The module *almost* worked directly in the PMod sockets. The only thing off is the polarity of the data lagametank. Alas, we therefore still need to connect it with dupont wires.
 
 Connect the module to the Tang's bottom GPIOs as follows. 
 - "HDMI_CKP" and etc are corresponding pin labels on the HDMI module.

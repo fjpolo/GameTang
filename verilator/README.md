@@ -3,8 +3,8 @@ This is a Verilator-driven graphical simulation of gametang. Should be useful in
 To run the simulation:
 
 ```
-hexdump -ve '1/1 "%02x\n"' game.nes > game.nes.hex
-# change INES_SIZE in game_data.v to reflect size of game.nes
+hexdump -ve '1/1 "%02x\n"' game.gametank > game.gametank.hex
+# change IGAMETANK_SIZE in game_data.v to reflect size of game.gametank
 make sim
 ```
 

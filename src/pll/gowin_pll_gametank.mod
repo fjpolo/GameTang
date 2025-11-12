@@ -5,8 +5,8 @@
 -part_number GW5AST-LV138PG484AC1/I0
 
 
--mod_name gowin_pll_nes
--file_name gowin_pll_nes
+-mod_name gowin_pll_gametank
+-file_name gowin_pll_gametank
 -path F:/Gowin/dev/bl616-experiments/03.gametang/src/gowin_pll/
 -type PLL_ADV
 -file_type vlg

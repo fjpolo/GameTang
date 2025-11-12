@@ -38,8 +38,8 @@ module gametang_top (
     output [7:0] led,
 `endif
 
-`ifdef CONTROLLER_SNES
-    // snes controllers
+`ifdef CONTROLLER_GAMETANK
+    // sgametank controllers
     output joy1_strb,
     output joy1_clk,
     input joy1_data,
@@ -81,7 +81,7 @@ module gametang_top (
 wire arm_reset = 0;
 wire [1:0] system_type = 2'b0;
 wire pal_video = 0;
-wire [1:0] scanlines = 2'b0;
+wire [1:0] scanligametank = 2'b0;
 wire joy_swap = 0;
 wire mirroring_osd = 0;
 wire overscan_osd = 0;
@@ -91,8 +91,8 @@ wire [2:0] diskside_osd = 0;
 wire blend = 0;
 wire bk_save = 0;
 
-// NES signals
-reg reset_nes = 1;
+// GAMETANK signals
+reg reset_gametank = 1;
 reg clkref;
 wire [5:0] color;
 wire [15:0] sample;
@@ -115,7 +115,7 @@ reg [1:0] last_joypad_clock;
 wire [31:0] dbgadr;
 wire [1:0] dbgctr;
 
-wire [1:0] nes_ce;
+wire [1:0] gametank_ce;
 
 wire loading;                 // from iosys or game_data
 wire [7:0] loader_do;
@@ -145,19 +145,19 @@ wire usb_conerr, usb_conerr2;
 wire auto_a, auto_b, auto_a2, auto_b2;
 
 
-// OR together when both SNES and DS2 controllers are connected (right now only nano20k supports both simultaneously)
-wor [11:0] joy1_btns, joy2_btns;    // SNES layout (R L X A RT LT DN UP START SELECT Y B)
-                                    // Lower 8 bits are NES buttons
+// OR together when both GAMETANK and DS2 controllers are connected (right now only nano20k supports both simultaneously)
+wor [11:0] joy1_btns, joy2_btns;    // GAMETANK layout (R L X A RT LT DN UP START SELECT Y B)
+                                    // Lower 8 bits are GAMETANK buttons
 wire [11:0] joy_usb1, joy_usb2;
 wire [11:0] hid1, hid2;             // From BL616
 wire [11:0] joy1 = joy1_btns | hid1 | joy_usb1;
 wire [11:0] joy2 = joy2_btns | hid2 | joy_usb2;
 
-// NES gamepad
-wire [7:0]NES_gamepad_button_state;
-wire NES_gamepad_data_available;
-wire [7:0]NES_gamepad_button_state2;
-wire NES_gamepad_data_available2;
+// GAMETANK gamepad
+wire [7:0]GAMETANK_gamepad_button_state;
+wire GAMETANK_gamepad_data_available;
+wire [7:0]GAMETANK_gamepad_button_state2;
+wire GAMETANK_gamepad_data_available2;
 
 // Loader
 wire [21:0] loader_addr;
@@ -170,7 +170,7 @@ wire [63:0] loader_flags;
 reg  [63:0] mapper_flags;
 wire loader_done, loader_fail;
 wire loader_busy, loaded;
-wire type_nes = 1'b1;  // (menu_index == 0) || (menu_index == {2'd0, 6'h1});
+wire type_gametank = 1'b1;  // (menu_index == 0) || (menu_index == {2'd0, 6'h1});
 wire type_bios = 1'b0; // (menu_index == 2);
 wire is_bios = 0;      //type_bios;
 wire type_fds = 1'b0;  // (menu_index == {2'd1, 6'h1});
@@ -204,11 +204,11 @@ end
 `ifdef PLL_R
 // Nano uses rPLL and 27Mhz crystal
 assign clk27 = sys_clk;       // Nano20K: native 27Mhz system clock
-gowin_pll_nes pll_nes(.clkin(sys_clk), .clkoutd3(clk), .clkout(fclk), .clkoutp(O_sdram_clk));
+gowin_pll_gametank pll_gametank(.clkin(sys_clk), .clkoutd3(clk), .clkout(fclk), .clkoutp(O_sdram_clk));
 `else
 // All other boards uses 50Mhz crystal
 gowin_pll_27 pll_27 (.clkin(sys_clk), .clkout0(clk27));      // Primer25K: PLL to generate 27Mhz from 50Mhz
-gowin_pll_nes pll_nes (.clkin(sys_clk), .clkout0(clk), .clkout1(fclk), .clkout2(O_sdram_clk));
+gowin_pll_gametank pll_gametank (.clkin(sys_clk), .clkout0(clk), .clkout1(fclk), .clkout2(O_sdram_clk));
 `endif
 
 gowin_pll_hdmi pll_hdmi (
@@ -234,10 +234,10 @@ assign fclk = sys_clk;
 wire [31:0] status;
 
 
-// Main NES machine
-NES nes(
-    .clk(clk), .reset_nes(reset_nes), .cold_reset(1'b0),
-    .sys_type(system_type), .nes_div(nes_ce),
+// Main GAMETANK machine
+GAMETANK gametank(
+    .clk(clk), .reset_gametank(reset_gametank), .cold_reset(1'b0),
+    .sys_type(system_type), .gametank_div(gametank_ce),
     .mapper_flags(mapper_flags),
     .sample(sample), .color(color),
     .joypad_out(joypad_out), .joypad_clock(joypad_clock), 
@@ -286,8 +286,8 @@ always @(posedge clk) begin
         mapper_flags <= loader_flags;
 end
 
-// From sdram_nes.v or sdram_sim.v
-sdram_nes sdram (
+// From sdram_gametank.v or sdram_sim.v
+sdram_gametank sdram (
     .clk(fclk), .clkref(clkref), .resetn(sys_resetn), .busy(sdram_busy),
 
     .SDRAM_DQ(IO_sdram_dq), .SDRAM_A(O_sdram_addr), .SDRAM_BA(O_sdram_ba), 
@@ -317,7 +317,7 @@ sdram_nes sdram (
 // ROM parser
 GameLoader loader(
     .clk(clk), .reset(~sys_resetn | loader_reset), .downloading(loading), 
-    .filetype({4'b0000, type_nsf, type_fds, type_nes, type_bios}),
+    .filetype({4'b0000, type_nsf, type_fds, type_gametank, type_bios}),
     .is_bios(is_bios), .invert_mirroring(1'b0),
     .indata(loader_do), .indata_clk(loader_do_valid),
 
@@ -333,12 +333,12 @@ assign ext_audio = (mapper_flags[7:0] == 19) | (mapper_flags[7:0] == 24) | (mapp
 always @(posedge clk) begin
     clkref <= ~clkref;
     if (~loading && loading_r) begin
-        reset_nes <= 0;
+        reset_gametank <= 0;
         clkref <= 1;
     end else if (loading && ~loading_r)
-        reset_nes <= 1;
+        reset_gametank <= 1;
     if (~sys_resetn)
-        reset_nes <= 1;
+        reset_gametank <= 1;
 end
 
 ///////////////////////////
@@ -361,7 +361,7 @@ wire [7:0]  overlay_y;
 wire [14:0] overlay_color;      // BGR5
 
 // HDMI output
-nes2hdmi u_hdmi (     // purple: RGB=440064 (010001000_00000000_01100100), BGR5=01100_00000_01000
+gametank2hdmi u_hdmi (     // purple: RGB=440064 (010001000_00000000_01100100), BGR5=01100_00000_01000
     .clk(clk), .resetn(sys_resetn),
     .color(color), .cycle(cycle), 
     .scanline(scanline), .sample(sample >> 1),
@@ -387,12 +387,12 @@ iosys_bl616 #(.COLOR_LOGO(15'b01100_00000_01000), .FREQ(21_492_000), .CORE_ID(1)
 );
 
 // Controller input
-`ifdef CONTROLLER_SNES
-controller_snes joy1_snes (
+`ifdef CONTROLLER_GAMETANK
+controller_sgametank joy1_sgametank (
     .clk(clk), .resetn(sys_resetn), .buttons(joy1_btns),
     .joy_strb(joy1_strb), .joy_clk(joy1_clk), .joy_data(joy1_data)
 );
-controller_snes joy2_snes (
+controller_sgametank joy2_sgametank (
     .clk(clk), .resetn(sys_resetn), .buttons(joy2_btns),
     .joy_strb(joy2_strb), .joy_clk(joy2_clk), .joy_data(joy2_data)
 );
@@ -400,11 +400,11 @@ controller_snes joy2_snes (
 
 `ifdef CONTROLLER_DS2
 controller_ds2 joy1_ds2 (
-    .clk(clk), .snes_buttons(joy1_btns),
+    .clk(clk), .sgametank_buttons(joy1_btns),
     .ds_clk(ds_clk), .ds_miso(ds_miso), .ds_mosi(ds_mosi), .ds_cs(ds_cs) 
 );
 controller_ds2 joy2_ds2 (
-   .clk(clk), .snes_buttons(joy2_btns),
+   .clk(clk), .sgametank_buttons(joy2_btns),
    .ds_clk(ds_clk2), .ds_miso(ds_miso2), .ds_mosi(ds_mosi2), .ds_cs(ds_cs2) 
 );
 `endif
@@ -418,7 +418,7 @@ pll_12 pll12(.clkin(sys_clk), .clkout0(clk12), .lock(pll_lock_12));
 usb_hid_host usb_hid_host (
     .usbclk(clk12), .usbrst_n(pll_lock_12),
     .usb_dm(usb1_dn), .usb_dp(usb1_dp),
-    .game_snes(joy_usb1), .typ(usb_type), .conerr(usb_conerr)
+    .game_sgametank(joy_usb1), .typ(usb_type), .conerr(usb_conerr)
 );
 `else
 assign joy_usb1 = 12'b0;
@@ -430,14 +430,14 @@ wire [1:0] usb_type2;
 usb_hid_host usb_hid_host2 (
     .usbclk(clk12), .usbrst_n(pll_lock_12),
     .usb_dm(usb2_dn), .usb_dp(usb2_dp),
-    .game_snes(joy_usb2), .typ(usb_type2), .conerr(usb_conerr2)
+    .game_sgametank(joy_usb2), .typ(usb_type2), .conerr(usb_conerr2)
 );
 assign led = ~{joy_usb2[1:0], usb_type2, usb_conerr2, usb_type, usb_conerr};
 `else
 assign joy_usb2 = 12'b0;
 `endif
 
-// Autofire for NES A (right) and B (left) buttons
+// Autofire for GAMETANK A (right) and B (left) buttons
 Autofire af_a (.clk(clk), .resetn(sys_resetn), .btn(joy1[8]), .out(auto_a));
 Autofire af_b (.clk(clk), .resetn(sys_resetn), .btn(joy1[9]), .out(auto_b));
 Autofire af_a2 (.clk(clk), .resetn(sys_resetn), .btn(joy2[8]), .out(auto_a2));

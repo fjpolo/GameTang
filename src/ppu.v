@@ -286,9 +286,9 @@ module SpriteRAM(
     input obj_size,            // Set to 1 if objects are 16 pixels.
     input [8:0] scanline,      // Current scan line (compared against Y)
     input [8:0] cycle,         // Current cycle.
-    output reg [7:0] oam_bus,  // Current value on the OAM bus, returned to NES through $2004.
-    input oam_ptr_load,        // Load oam with specified value, when writing to NES $2003.
-    input oam_load,            // Load oam_ptr with specified value, when writing to NES $2004.
+    output reg [7:0] oam_bus,  // Current value on the OAM bus, returned to GAMETANK through $2004.
+    input oam_ptr_load,        // Load oam with specified value, when writing to GAMETANK $2003.
+    input oam_load,            // Load oam_ptr with specified value, when writing to GAMETANK $2004.
     input [7:0] data_in,       // New value for oam or oam_ptr
     output reg spr_overflow,   // Set to true if we had more than 8 objects on a scan line. Reset when exiting vblank.
     output reg sprite0,        // True if sprite#0 is included on the scan line currently being painted.
@@ -343,7 +343,7 @@ always @* begin
         5'b0_01_00: oam_inc = {!spr_is_inside, spr_is_inside}; // State 1: Copy Y coordinate and increment oam by 1 if it's inside, otherwise 4.
         5'b0_01_??: oam_inc = {oam_ptr[1:0] == 3, 1'b1};       // State 1: Copy remaining 3 bytes of the oam.
         // State 3: We've had more than 8 sprites. Set overflow flag if we found a sprite that overflowed.
-        // NES BUG: It increments both low and high counters.
+        // GAMETANK BUG: It increments both low and high counters.
         5'b0_11_??: oam_inc = 2'b11;
         // While in the final state, keep incrementing the low bits only until they're zero.
         5'b0_10_??: oam_inc = {1'b0, oam_ptr[1:0] != 0};
@@ -375,7 +375,7 @@ always @(posedge clk) if (ce) begin
     if (sprites_enabled && state == 2'b11 && spr_is_inside)
         overflow <= 1;
 
-    // XXX: This delay is nessisary probably because the OAM handling is a cycle early
+    // XXX: This delay is gametanksisary probably because the OAM handling is a cycle early
     spr_overflow <= overflow;
 
     // Remember if sprite0 is included on the scanline, needed for hit test later.
@@ -459,7 +459,7 @@ assign load_in = {vram_f, vram_f, temp, temp[1:0], temp[5]};
 // If $2000.5 = 0, the tile index data is used as usual, and $2000.3
 // selects the pattern table to use. If $2000.5 = 1, the MSB of the range
 // result value become the LSB of the indexed tile, and the LSB of the tile
-// index value determines pattern table selection. The lower 3 bits of the
+// index value determigametank pattern table selection. The lower 3 bits of the
 // range result value are always used as the fine vertical offset into the
 // selected pattern.
 assign vram_addr = {obj_size ? temp_tile[0] : obj_patt,

@@ -39,7 +39,7 @@ int config;
 
 void usage() {
 	printf("GAMETang Loader 0.2\n");
-	printf("Usage: loader [options] < game.nes or - >\n");
+	printf("Usage: loader [options] < game.gametank or - >\n");
 	printf("Options:\n");
 	printf("    -c <port>  use specific serial port (\\\\.\\COM4, /dev/ttyUSB0...).\n");
 	printf("    -b <rate>  specify baudrate, e.g. 115200 (default is 921600).\n");
@@ -95,7 +95,7 @@ int parseArgs(int argc, char* argv[]) {
 }
 
 bool inOSD = false;
-int sendNES(fs::path p);
+int sendGAMETANK(fs::path p);
 
 int main(int argc, char* argv[]) {
 	int idx = parseArgs(argc, argv);
@@ -116,7 +116,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	if (strcmp(argv[idx], "-") != 0) {
-		if (sendNES(fs::path(argv[idx])))
+		if (sendGAMETANK(fs::path(argv[idx])))
 			return -1;
 	}
 	else {
@@ -168,21 +168,21 @@ int main(int argc, char* argv[]) {
 
 		if (inOSD) {
 			// pass keys to OSD module
-			osd_update(pad[0].nesKeys);
+			osd_update(pad[0].gametankKeys);
 			goto joy_continue;
 		}
 		
-		// Pass key to NES
-		if (pad[0].nesKeys != last_keys0) {
+		// Pass key to GAMETANK
+		if (pad[0].gametankKeys != last_keys0) {
 			// printf("Keys %.2x\n", keys1);
-			writePacket(uart, 0x40, &pad[0].nesKeys, 1);
-			last_keys0 = pad[0].nesKeys;
+			writePacket(uart, 0x40, &pad[0].gametankKeys, 1);
+			last_keys0 = pad[0].gametankKeys;
 		}
 
 		// Process controller #2
-		if (pad[1].nesKeys != last_keys1) {
-			writePacket(uart, 0x41, &pad[1].nesKeys, 1);
-			last_keys1 = pad[1].nesKeys;
+		if (pad[1].gametankKeys != last_keys1) {
+			writePacket(uart, 0x41, &pad[1].gametankKeys, 1);
+			last_keys1 = pad[1].gametankKeys;
 		}
 
 	joy_continue:
@@ -197,12 +197,12 @@ int main(int argc, char* argv[]) {
 
 // return 0 if successful
 static char sendbuf[16384];
-int sendNES(fs::path p)
+int sendGAMETANK(fs::path p)
 {
 	ifstream f(p, ios::binary);
 	if (!f.is_open()) { printf("File open fail\n"); return 1; }
 
-	// Reset NES machine
+	// Reset GAMETANK machine
 	{ char v = 1; writePacket(uart, 0x35, &v, 1); }
 	{ char v = 0; writePacket(uart, 0x35, &v, 1); }
 
@@ -217,7 +217,7 @@ int sendNES(fs::path p)
 		// printf("want_read=%d, actual_read=%d\n", (int)want_read, (int)n);
 		if (n > 0) {
 			if (first && n > 16 && strncmp(&sendbuf[7], "DiskDude!", 9) == 0) {
-				// "DiskDude!" work-around. See https://www.nesdev.org/wiki/INES
+				// "DiskDude!" work-around. See https://www.gametankdev.org/wiki/IGAMETANK
 				// Older versions of the iNES emulator ignored bytes 7-15 and writes "DiskDude!" there, 
 				// corrupting byte 7 and results in 64 being added to the mapper number.
 				printf("Old rom file detected with 'DiskDude!' string. Applying fix on-the-fly.\n");

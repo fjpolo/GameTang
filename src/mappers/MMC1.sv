@@ -1,6 +1,6 @@
 // MMC1 mapper chip. Maps prg or chr addresses into a linear address.
 
-// If vram_ce is set, {vram_a10, chr_aout[9:0]} are used to access the NES internal VRAM instead.
+// If vram_ce is set, {vram_a10, chr_aout[9:0]} are used to access the GAMETANK internal VRAM instead.
 module MMC1(
 	input        clk,         // System clock
 	input        ce,          // M2 ~cpu_clk
@@ -160,7 +160,7 @@ assign chr_allow = flags[15];
 endmodule
 
 
-// #105 - NES-EVENT. Retrofits an MMC1 with lots of extra logic.
+// #105 - GAMETANK-EVENT. Retrofits an MMC1 with lots of extra logic.
 module NesEvent(
 	input        clk,         // System clock
 	input        ce,          // M2 ~cpu_clk
@@ -196,7 +196,7 @@ wire [3:0] mmc1_chr = mmc1_chr_addr[16:13]; // Upper 4 CHR output control bits f
 wire [21:0] mmc1_aout;                 // PRG output address from MMC chip
 wire irq;
 
-MMC1 mmc1_nesevent(
+MMC1 mmc1_gametankevent(
 	.clk        (clk),
 	.ce         (ce),
 	.enable     (enable),

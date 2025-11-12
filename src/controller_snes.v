@@ -1,5 +1,5 @@
-// A self-scanning SNES/NES controller interface
-module controller_snes #(
+// A self-scanning SNES/GAMETANK controller interface
+module controller_sgametank #(
     parameter FREQ = 21_500_000         // frequency of clk
 )(
     input clk,
@@ -16,7 +16,7 @@ module controller_snes #(
 
 /*
 
-https://gamefaqs.gamespot.com/snes/916396-super-nintendo/faqs/5395
+https://gamefaqs.gamespot.com/sgametank/916396-super-nintendo/faqs/5395
 
        ----------------------------- ---------------------
       |                             |                      \
@@ -111,9 +111,9 @@ always @(posedge clk) begin
                 bits <= bits + 1;
                 if (bits == 4'd15) begin     // scan complete
                     state <= 3;
-                    // check if buttons_buf[15:12] are 0; if not, this is an NES controller
+                    // check if buttons_buf[15:12] are 0; if not, this is an GAMETANK controller
                     if (buttons_buf[15:12] != 4'b0000) begin
-                        // NES controller
+                        // GAMETANK controller
                         buttons <= {0, 0, 0, 0, buttons_buf[7:0]};
                     end else begin
                         // SNES controller

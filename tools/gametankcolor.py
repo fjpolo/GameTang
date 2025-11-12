@@ -11,7 +11,7 @@ P = [(84, 84, 84), (0, 30, 116), (8, 16, 144), (48, 0, 136), (68, 0, 100), (92, 
                (236, 238, 236), (168, 204, 236), (188, 188, 236), (212, 178, 236), (236, 174, 236), (236, 174, 212), (236, 180, 176), (228, 196, 144), 
                (204, 210, 120), (180, 222, 120), (168, 226, 144), (152, 226, 180), (160, 214, 228), (160, 162, 160), (0,0,0), (0,0,0)]
 
-def rgb2nes(r, g, b):
+def rgb2gametank(r, g, b):
     dist = 256*256*3 + 1
     q = -1
     for i in range(64):
@@ -22,13 +22,13 @@ def rgb2nes(r, g, b):
             q = i
     return q
 
-def image2nes(img):
-    nes = [[0 for i in range(256)] for i in range(240)]
+def image2gametank(img):
+    gametank = [[0 for i in range(256)] for i in range(240)]
     for y in range(240):
         for x in range(256):
             p=img.getpixel((x, y))
-            nes[y][x] = rgb2nes(p[0], p[1], p[2])
-    return nes
+            gametank[y][x] = rgb2gametank(p[0], p[1], p[2])
+    return gametank
 
 # with Image.open('gametang.png') as im:
 #     if im.size != (256, 240):
@@ -37,7 +37,7 @@ def image2nes(img):
 #     for x in range(256):
 #         for y in range(240):
 #             p = im.getpixel((x, y))
-#             q = rgb2nes(p[0], p[1], p[2])
+#             q = rgb2gametank(p[0], p[1], p[2])
 #             # if q != 13:
 #             #     print('{},{}={}'.format(x, y, q))
 #             im.putpixel((x,y), P[q])

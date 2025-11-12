@@ -1022,7 +1022,7 @@ module APU (
 
 endmodule
 
-// http://wiki.nesdev.com/w/index.php/APU_Mixer
+// http://wiki.gametankdev.com/w/index.php/APU_Mixer
 // I generated three LUT's for each mix channel entry and one lut for the squares, then a
 // 284 entry lut for the mix channel. It's more accurate than the original LUT system listed on
 // the NesDev page. In addition I boosted the square channel 10% and lowered the mix channel 10%

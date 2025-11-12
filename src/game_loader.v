@@ -2,7 +2,7 @@
 
 // Module reads bytes and writes to proper address in ram.
 // Done is asserted when the whole game is loaded.
-// This parses iNES headers too.
+// This parses iGAMETANK headers too.
 module GameLoader
 (
 	input         clk,
@@ -26,11 +26,11 @@ module GameLoader
 
 reg [7:0] prgsize;
 reg [3:0] ctr;
-reg [7:0] ines[0:15]; // 16 bytes of iNES header
+reg [7:0] igametank[0:15]; // 16 bytes of iGAMETANK header
 reg [21:0] bytes_left;
 
-wire [7:0] prgrom = ines[4];	// Number of 16384 byte program ROM pages
-wire [7:0] chrrom = ines[5];	// Number of 8192 byte character ROM pages (0 indicates CHR RAM)
+wire [7:0] prgrom = igametank[4];	// Number of 16384 byte program ROM pages
+wire [7:0] chrrom = igametank[5];	// Number of 8192 byte character ROM pages (0 indicates CHR RAM)
 wire has_chr_ram = (chrrom == 0);
 assign mem_data = (state == S_CLEARRAM || (~copybios && state == S_COPYBIOS)) ? 8'h00 : indata;
 assign mem_write = (((bytes_left != 0) && (state == S_LOADPRG || state == S_LOADCHR)
@@ -53,34 +53,34 @@ wire [2:0] chr_size /* synthesis syn_keep=1 */= chrrom <= 1  ? 3'd0 : 		// 8KB
                       chrrom <= 32 ? 3'd5 : 		// 256KB
                       chrrom <= 64 ? 3'd6 : 3'd7;// 512KB/1MB
   
-// detect iNES2.0 compliant header
-wire is_nes20 = (ines[7][3:2] == 2'b10);
-// differentiate dirty iNES1.0 headers from proper iNES2.0 ones
-wire is_dirty = !is_nes20 && ((ines[9][7:1] != 0)
-                           || (ines[10] != 0)
-                           || (ines[11] != 0)
-                           || (ines[12] != 0)
-                           || (ines[13] != 0)
-                           || (ines[14] != 0)
-                           || (ines[15] != 0));
+// detect iGAMETANK2.0 compliant header
+wire is_gametank20 = (igametank[7][3:2] == 2'b10);
+// differentiate dirty iGAMETANK1.0 headers from proper iGAMETANK2.0 ogametank
+wire is_dirty = !is_gametank20 && ((igametank[9][7:1] != 0)
+                           || (igametank[10] != 0)
+                           || (igametank[11] != 0)
+                           || (igametank[12] != 0)
+                           || (igametank[13] != 0)
+                           || (igametank[14] != 0)
+                           || (igametank[15] != 0));
 
 // Read the mapper number
-wire [7:0] mapper /* synthesis syn_keep=1 */ = {is_dirty ? 4'b0000 : ines[7][7:4], ines[6][7:4]};
-wire [7:0] ines2mapper = {is_nes20 ? ines[8] : 8'h00};
-wire [3:0] prgram = {is_nes20 ? ines[10][3:0] : 4'h0};
-wire [3:0] prg_nvram = (is_nes20 ? ines[10][7:4] : 4'h0);
-wire       piano = is_nes20 && (ines[15][5:0] == 6'h19);
-wire has_saves = ines[6][1];
+wire [7:0] mapper /* synthesis syn_keep=1 */ = {is_dirty ? 4'b0000 : igametank[7][7:4], igametank[6][7:4]};
+wire [7:0] igametank2mapper = {is_gametank20 ? igametank[8] : 8'h00};
+wire [3:0] prgram = {is_gametank20 ? igametank[10][3:0] : 4'h0};
+wire [3:0] prg_nvram = (is_gametank20 ? igametank[10][7:4] : 4'h0);
+wire       piano = is_gametank20 && (igametank[15][5:0] == 6'h19);
+wire has_saves = igametank[6][1];
 
 assign mapper_flags[63:35] = 'd0;
-assign mapper_flags[34:31] = prg_nvram; //NES 2.0 Save RAM shift size (64 << size)
+assign mapper_flags[34:31] = prg_nvram; //GAMETANK 2.0 Save RAM shift size (64 << size)
 assign mapper_flags[30]    = piano;
-assign mapper_flags[29:26] = prgram; //NES 2.0 PRG RAM shift size (64 << size)
+assign mapper_flags[29:26] = prgram; //GAMETANK 2.0 PRG RAM shift size (64 << size)
 assign mapper_flags[25]    = has_saves;
-assign mapper_flags[24:17] = ines2mapper; //NES 2.0 submapper
-assign mapper_flags[16]    = ines[6][3]; // 4 screen mode
+assign mapper_flags[24:17] = igametank2mapper; //GAMETANK 2.0 submapper
+assign mapper_flags[16]    = igametank[6][3]; // 4 screen mode
 assign mapper_flags[15]    = has_chr_ram;
-assign mapper_flags[14]    = ines[6][0] ^ invert_mirroring; // mirroring
+assign mapper_flags[14]    = igametank[6][0] ^ invert_mirroring; // mirroring
 assign mapper_flags[13:11] = chr_size;
 assign mapper_flags[10:8]  = prg_size;
 assign mapper_flags[7:0]   = mapper;
@@ -92,12 +92,12 @@ typedef enum bit [3:0] { S_LOADHEADER, S_LOADPRG, S_LOADCHR, S_LOADFDS, S_ERROR,
 mystate state;
 
 wire type_bios = filetype[0];
-wire type_nes = filetype[1];
+wire type_gametank = filetype[1];
 wire type_fds = filetype[2];
 wire type_nsf = filetype[3];
 
 always @(posedge clk) begin
-	if (downloading && (type_fds || type_nes || type_nsf))
+	if (downloading && (type_fds || type_gametank || type_nsf))
 		rom_loaded <= 1;
 
 	if (reset) begin
@@ -112,22 +112,22 @@ always @(posedge clk) begin
 		copybios <= 0;
 	end else begin
 		case(state)
-		// Read 16 bytes of ines header
+		// Read 16 bytes of igametank header
 		S_LOADHEADER:
 			if (indata_clk) begin
 			  error <= 0;
 			  ctr <= ctr + 1'd1;
 			  mem_addr <= mem_addr + 1'd1;
-			  ines[ctr] <= indata;
+			  igametank[ctr] <= indata;
 			  bytes_left <= {prgrom, 14'b0};
 			  if (ctr == 4'b1111) begin
-				 // Check the 'NES' header. Also, we don't support trainers.
+				 // Check the 'GAMETANK' header. Also, we don't support trainers.
 				 busy <= 1;
-				 if ((ines[0] == 8'h4E) && (ines[1] == 8'h45) && (ines[2] == 8'h53) && (ines[3] == 8'h1A) && !ines[6][2]) begin
+				 if ((igametank[0] == 8'h4E) && (igametank[1] == 8'h45) && (igametank[2] == 8'h53) && (igametank[3] == 8'h1A) && !igametank[6][2]) begin
 					mem_addr <= 0;  // Address for PRG
 					state <= S_LOADPRG;
 				 //FDS
-				 end else if ((ines[0] == 8'h46) && (ines[1] == 8'h44) && (ines[2] == 8'h53) && (ines[3] == 8'h1A)) begin
+				 end else if ((igametank[0] == 8'h46) && (igametank[1] == 8'h44) && (igametank[2] == 8'h53) && (igametank[3] == 8'h1A)) begin
 					mem_addr <= 22'b11_1100_0000_0000_0001_0000;  // Address for FDS skip Header
 					state <= S_LOADFDS;
 					bytes_left <= 21'b1;
@@ -179,18 +179,18 @@ always @(posedge clk) begin
 //				bytes_left <= 21'h800;
 				mem_addr <= 22'b11_1000_0000_0001_0000_0010; // FDS - Clear these two RAM addresses to restart BIOS
 				bytes_left <= 21'h2;
-				ines[4] <= 8'hFF;//no masking
-				ines[5] <= 8'h00;//0x2000
-				ines[6] <= 8'h40;
-				ines[7] <= 8'h10;
-				ines[8] <= 8'h00;
-				ines[9] <= 8'h00;
-				ines[10] <= 8'h00;
-				ines[11] <= 8'h00;
-				ines[12] <= 8'h00;
-				ines[13] <= 8'h00;
-				ines[14] <= 8'h00;
-				ines[15] <= 8'h00;
+				igametank[4] <= 8'hFF;//no masking
+				igametank[5] <= 8'h00;//0x2000
+				igametank[6] <= 8'h40;
+				igametank[7] <= 8'h10;
+				igametank[8] <= 8'h00;
+				igametank[9] <= 8'h00;
+				igametank[10] <= 8'h00;
+				igametank[11] <= 8'h00;
+				igametank[12] <= 8'h00;
+				igametank[13] <= 8'h00;
+				igametank[14] <= 8'h00;
+				igametank[15] <= 8'h00;
 				state <= S_CLEARRAM;
 				clearclk <= 4'h0;
 				copybios <= ~is_bios; // Don't copybios for bootrom0
@@ -231,7 +231,7 @@ always @(posedge clk) begin
 			 end else begin
 				state <= S_LOADNSFD;
 				//mem_addr <= {22'b01_0000_0000_0000_0000_0000; // Address for NSF Data
-				mem_addr <= {10'b01_0000_0000,ines[9][3:0],ines[8]};//_0000_0000_0000; // Address for NSF Data
+				mem_addr <= {10'b01_0000_0000,igametank[9][3:0],igametank[8]};//_0000_0000_0000; // Address for NSF Data
 				bytes_left <= 21'b1;
 			 end
 			end
@@ -243,18 +243,18 @@ always @(posedge clk) begin
 			 end else begin
 				mem_addr <= 22'b00_0000_0000_0001_1000_0000; // Address for NSF Player (0x180)
 				bytes_left <= 21'h0E80;
-				ines[4] <= 8'hFF;//no masking
-				ines[5] <= 8'h00;//0x2000
-				ines[6] <= 8'hF0;//Use Mapper 31
-				ines[7] <= 8'h18;//Use NES 2.0
-				ines[8] <= 8'hF0;//Use Submapper 15
-				ines[9] <= 8'h00;
-				ines[10] <= 8'h00;
-				ines[11] <= 8'h00;
-				ines[12] <= 8'h00;
-				ines[13] <= 8'h00;
-				ines[14] <= 8'h00;
-				ines[15] <= 8'h00;
+				igametank[4] <= 8'hFF;//no masking
+				igametank[5] <= 8'h00;//0x2000
+				igametank[6] <= 8'hF0;//Use Mapper 31
+				igametank[7] <= 8'h18;//Use GAMETANK 2.0
+				igametank[8] <= 8'hF0;//Use Submapper 15
+				igametank[9] <= 8'h00;
+				igametank[10] <= 8'h00;
+				igametank[11] <= 8'h00;
+				igametank[12] <= 8'h00;
+				igametank[13] <= 8'h00;
+				igametank[14] <= 8'h00;
+				igametank[15] <= 8'h00;
 				state <= S_COPYPLAY;
 				clearclk <= 4'h0;
 			 end

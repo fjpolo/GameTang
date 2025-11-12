@@ -7,7 +7,7 @@
 //Device Version: C
 //Created Time: Fri Apr  5 10:42:16 2024
 
-module gowin_pll_nes (clkout, clkoutp, clkoutd3, clkin);
+module gowin_pll_gametank (clkout, clkoutp, clkoutd3, clkin);
 
 output clkout;
 output clkoutp;
@@ -63,4 +63,4 @@ defparam rpll_inst.CLKOUTD_SRC = "CLKOUT";
 defparam rpll_inst.CLKOUTD3_SRC = "CLKOUT";
 defparam rpll_inst.DEVICE = "GW2AR-18C";
 
-endmodule //gowin_pll_nes
+endmodule //gowin_pll_gametank

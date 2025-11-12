@@ -7,7 +7,7 @@
 //Device Version: A
 //Created Time: Sun Mar 31 00:24:37 2024
 
-module gowin_pll_nes (clkout0, clkout1, clkout2, clkin);
+module gowin_pll_gametank (clkout0, clkout1, clkout2, clkin);
 
 output clkout0;
 output clkout1;
@@ -134,4 +134,4 @@ defparam PLLA_inst.LPF_RES = 3'bXXX;
 defparam PLLA_inst.LPF_CAP = 2'b00;
 defparam PLLA_inst.SSC_EN = "FALSE";
 
-endmodule //gowin_pll_nes
+endmodule //gowin_pll_gametank

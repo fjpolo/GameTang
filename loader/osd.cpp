@@ -17,7 +17,7 @@ static const int CMD_OSD_DATA = 0x82;
 static const int CMD_OSD_SHOW = 0x83;
 
 char osdbuf[4096];			// 256*128 mono, every line is 32 bytes
-int osd_dirty_top = 0, osd_dirty_bottom = 16;		// in text lines
+int osd_dirty_top = 0, osd_dirty_bottom = 16;		// in text ligametank
 void osd_flush(HANDLE h);
 
 // print a string to OSD
@@ -31,7 +31,7 @@ void osd_print(int x, int y, const char* s, HANDLE h = 0) {
 	size_t c = strlen(s);
 	for (int xx = x; xx < x + c && xx < 32; xx++) {
 		char* ch = font8x8_basic[s[xx - x]];
-		for (int l = 0; l < 8; l++)		// 8 scanlines
+		for (int l = 0; l < 8; l++)		// 8 scanligametank
 			osdbuf[(y * 8 + l) * 32 + xx] = ch[l];
 	}
 	if (osd_dirty_top == -1 || osd_dirty_top > y)
@@ -39,7 +39,7 @@ void osd_print(int x, int y, const char* s, HANDLE h = 0) {
 	if (osd_dirty_bottom == -1 || osd_dirty_bottom < y + 1)
 		osd_dirty_bottom = y + 1;
 
-	// 2. send the corresponding lines over UART
+	// 2. send the corresponding ligametank over UART
 	if (h) osd_flush(h);
 }
 
@@ -214,7 +214,7 @@ static void screen_top(unsigned char key) {
 	//printf("TOP screen\n");
 	osd_clear();
 	osd_print(7, 1, "Welcome to GAMETang");
-	osd_print(1, 7, "Load .nes");
+	osd_print(1, 7, "Load .gametank");
 	osd_print(1, 14, "github.com/nand2mario/gametang");
 	osd_invert(0, 7, 32);		// highlight our "menu item"
 

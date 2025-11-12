@@ -225,7 +225,7 @@ void readFromSerial(HANDLE h) {
 #ifdef _MSC_VER
 // Windows gamepad support
 
-// https://www.nesdev.org/wiki/Standard_controller
+// https://www.gametankdev.org/wiki/Standard_controller
 unsigned char joyinfoToKey(JOYINFOEX& joy) {
 	unsigned char keys = 0;
 	keys |= !!(joy.dwButtons & 1) * 1;          // Map A and X to A
@@ -256,12 +256,12 @@ int updateGamepads(gamepad *pad) {
 
     if (joyGetPosEx(JOYSTICKID1, &joy) != MMSYSERR_NOERROR)
         return 0;
-    pad[0].nesKeys = joyinfoToKey(joy);
+    pad[0].gametankKeys = joyinfoToKey(joy);
     pad[0].osdButton = joy.dwButtons & 0x10;
 
     if (joyGetPosEx(JOYSTICKID2, &joy) != MMSYSERR_NOERROR)
         return 1;
-    pad[1].nesKeys = joyinfoToKey(joy);
+    pad[1].gametankKeys = joyinfoToKey(joy);
     pad[1].osdButton = joy.dwButtons & 0x10;
 
     return 2;
@@ -309,7 +309,7 @@ static int is_event_device(const struct dirent *dir) {
 }
 
 // compare names to already open gamepads, if same do nothing
-// if different, then close open ones and open new gamepads
+// if different, then close open ogametank and open new gamepads
 static void openPads(vector<string> names) {
     for (int i = 0; i < 2; i++) {
         if (i >= names.size() && padName[i] != "") {
@@ -391,32 +391,32 @@ void readGamepad(int fd, struct gamepad *p) {
 
         if (t == 1) {
             if (c == 304 || c == 307)   // map A and X to button A
-                p->nesKeys = p->nesKeys & ~1 | v;
+                p->gametankKeys = p->gametankKeys & ~1 | v;
             else if (c == 305 || c == 308)  // B and y to button B
-                p->nesKeys = p->nesKeys & ~2 | (v << 1);
+                p->gametankKeys = p->gametankKeys & ~2 | (v << 1);
             else if (c == 314)          // Select
-                p->nesKeys = p->nesKeys & ~4 | (v << 2);
+                p->gametankKeys = p->gametankKeys & ~4 | (v << 2);
             else if (c == 315)          // Start
-                p->nesKeys = p->nesKeys & ~8 | (v << 3);
+                p->gametankKeys = p->gametankKeys & ~8 | (v << 3);
             else if (c == 706)          // D-Pad up
-                p->nesKeys = p->nesKeys & ~16 | (v << 4);
+                p->gametankKeys = p->gametankKeys & ~16 | (v << 4);
             else if (c == 707)          // D-Pad down
-                p->nesKeys = p->nesKeys & ~32 | (v << 5);
+                p->gametankKeys = p->gametankKeys & ~32 | (v << 5);
             else if (c == 704)          // D-Pad left
-                p->nesKeys = p->nesKeys & ~64 | (v << 6);
+                p->gametankKeys = p->gametankKeys & ~64 | (v << 6);
             else if (c == 705)          // D-Pad right
-                p->nesKeys = p->nesKeys & ~128 | (v << 7);
+                p->gametankKeys = p->gametankKeys & ~128 | (v << 7);
             else if (c == 310)          // LB
                 p->osdButton = (v == 1);
         } else if (t == 3) {
             const int HALF = 32768/2;
             if (c == 1) {
-                p->nesKeys = p->nesKeys & ~16 | ((v < -HALF) << 4);     // stick up
-                p->nesKeys = p->nesKeys & ~32 | ((v > HALF) << 5);    // stick down
+                p->gametankKeys = p->gametankKeys & ~16 | ((v < -HALF) << 4);     // stick up
+                p->gametankKeys = p->gametankKeys & ~32 | ((v > HALF) << 5);    // stick down
             }
             if (c == 0)  {
-                p->nesKeys = p->nesKeys & ~64 | ((v < -HALF) << 6);     // stick left
-                p->nesKeys = p->nesKeys & ~128 | ((v > HALF) << 7);     // stick right
+                p->gametankKeys = p->gametankKeys & ~64 | ((v < -HALF) << 6);     // stick left
+                p->gametankKeys = p->gametankKeys & ~128 | ((v > HALF) << 7);     // stick right
             }
         }
     }
@@ -566,7 +566,7 @@ set<string> GAMEPADS = {
  * //
  * // Author:
  * //     Marcel Sondaar
- * //     International Business Machines (public domain VGA fonts)
+ * //     International Busigametanks Machigametank (public domain VGA fonts)
  * //
  * // License:
  * //     Public Domain

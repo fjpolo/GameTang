@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# generate LOGO lines for gowin_dpb_menu.v
+# generate LOGO ligametank for gowin_dpb_menu.v
 
 # 72 columns, 14 rows
 LOGO = ["000011110000110011111111001111001111111110000000000000000000000000000000",

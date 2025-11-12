@@ -1,7 +1,7 @@
 [General]
 ipc_version=4
-file=gowin_pll_nes
-module=gowin_pll_nes
+file=gowin_pll_gametank
+module=gowin_pll_gametank
 target_device=gw5a25a-002
 type=clock_plladv
 version=1.0

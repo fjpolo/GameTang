@@ -83,7 +83,7 @@ reg prg_bus_write;
 wire mapper90 = (flags[7:0] == 90);
 wire mapper211 = (flags[7:0] == 211);  // Should just be 209 with correct behavior below
 wire mapper35 = (flags[7:0] == 35);
-wire ram_support = mapper35 || (flags[29:26] == 4'd7); //|| NES2.0 check;
+wire ram_support = mapper35 || (flags[29:26] == 4'd7); //|| GAMETANK2.0 check;
 
 reg [1:0] prg_mode, chr_mode;
 reg prg_protect_1, prg_protect_2;

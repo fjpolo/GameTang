@@ -1,11 +1,11 @@
 #/usr/bin/bash
 
 if [ "$1" == "" ]; then
-    echo "Usage: nes2hex.sh <x.nes>"
+    echo "Usage: gametank2hex.sh <x.gametank>"
     exit
 fi
 
-HEX="${1/.nes/.hex}"
+HEX="${1/.gametank/.hex}"
 
 hexdump -v -e '/1 "%02x\n"' $1 > $HEX
 

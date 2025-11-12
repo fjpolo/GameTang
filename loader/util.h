@@ -35,7 +35,7 @@ static std::wstring s2ws(const std::string& str)
 #endif
 
 struct gamepad {
-    unsigned char nesKeys;
+    unsigned char gametankKeys;
     bool osdButton;
 };
 

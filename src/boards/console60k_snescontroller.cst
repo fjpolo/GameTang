@@ -71,7 +71,7 @@ IO_LOC "flash_spi_clk" L12;
 IO_PORT "flash_spi_clk" PULL_MODE=NONE IO_TYPE=LVCMOS33;
 
 //------------------------------------------------------------------------------------
-// SNES controller 1 (PMOD1)
+// GAMETANK controller 1 (PMOD1)
 IO_LOC "joy1_strb" W19;
 IO_PORT "joy1_strb" PULL_MODE=NONE IO_TYPE=LVCMOS33;
 IO_LOC "joy1_clk" E22;
@@ -79,7 +79,7 @@ IO_PORT "joy1_clk" PULL_MODE=NONE IO_TYPE=LVCMOS33;
 IO_LOC "joy1_data" F19;
 IO_PORT "joy1_data" PULL_MODE=UP IO_TYPE=LVCMOS33;
 
-// SNES controller 2 (PMOD1)
+// GAMETANK controller 2 (PMOD1)
 IO_LOC "joy2_strb" W20;
 IO_PORT "joy2_strb" PULL_MODE=NONE IO_TYPE=LVCMOS33;
 IO_LOC "joy2_clk" D22;

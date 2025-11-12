@@ -1,5 +1,5 @@
 // 24C01, 24C02 EEPROM support
-// by GreyRogue for NES MiSTer
+// by GreyRogue for GAMETANK MiSTer
 
 module EEPROM_24C0x 
   (//Replace type_24C01 with EEPROM size and command size (Test State y/n and address bytes)?

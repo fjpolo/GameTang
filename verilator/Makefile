@@ -1,7 +1,7 @@
 N=gametang_top
 D=../src
 SRCS=$D/verilator/config.sv $D/verilator/sdram_sim.v $D/apu.v $D/cart.sv $D/compat.v $D/dpram.v \
-	$D/EEPROM_24C0x.sv $D/gametang_top.sv $D/nes.v $D/ppu.v \
+	$D/EEPROM_24C0x.sv $D/gametang_top.sv $D/gametank.v $D/ppu.v \
 	$D/t65/T65_Pack.v $D/t65/T65_ALU.v $D/t65/T65_MCode.v $D/t65/T65.v \
 	$D/game_loader.v $D/game_data.v \
 	$D/mappers/generic.sv $D/mappers/iir_filter.v $D/mappers/JYCompany.sv $D/mappers/misc.sv \

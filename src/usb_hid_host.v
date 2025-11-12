@@ -8,7 +8,7 @@
 //
 // See https://github.com/nand2mario/usb_hid_host
 // 
-// 3/22/2025: add LB and RB buttons, and SNES layout output `game_snes`
+// 3/22/2025: add LB and RB buttons, and GAMETANK layout output `game_sgametank`
 
 module usb_hid_host (
     input  usbclk,		            // 12MHz clock
@@ -30,7 +30,7 @@ module usb_hid_host (
     output reg signed [7:0] mouse_dy,      // signed 8-bit, cleared after `report` pulse
 
     // gamepad 
-    output [11:0] game_snes,        // SNES layout buttons (R L X A RT LT DN UP START SELECT Y B)
+    output [11:0] game_sgametank,        // GAMETANK layout buttons (R L X A RT LT DN UP START SELECT Y B)
     output reg game_l, game_r, game_u, game_d,  // left right up down
     output reg game_a, game_b, game_x, game_y, game_sel, game_sta,  // buttons 
     output reg game_lb, game_rb,
@@ -49,7 +49,7 @@ wire [3:0] save_b;      // dat[b]
 wire connected;
 reg retry;              // retry because we did not detect a HID device
 
-assign game_snes = {game_rb, game_lb, game_x, game_a, game_r, game_l, game_d, game_u, game_sta, game_sel, game_y, game_b};
+assign game_sgametank = {game_rb, game_lb, game_x, game_a, game_r, game_l, game_d, game_u, game_sta, game_sel, game_y, game_b};
 
 ukp ukp(
     .usbrst_n(usbrst_n & ~retry), .usbclk(usbclk),

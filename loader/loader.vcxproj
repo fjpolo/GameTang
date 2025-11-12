@@ -129,7 +129,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="nes_loader.cpp" />
+    <ClCompile Include="gametank_loader.cpp" />
     <ClCompile Include="osd.cpp" />
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="util.cpp" />

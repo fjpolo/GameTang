@@ -1,7 +1,7 @@
 
 ## Experimental USB Gamepad Setup
 
-GAMETang since 0.6 has experimental USB gamepad support, allowing you to use your existing controllers without the need to purchase new ones.
+GAMETang since 0.6 has experimental USB gamepad support, allowing you to use your existing controllers without the need to purchase new ogametank.
 
 Limitations,
 

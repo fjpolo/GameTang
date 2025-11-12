@@ -31,7 +31,7 @@ module iosys_bl616 #(
 
     // ROM loading interface
     output [7:0] rom_loading,   // 0-to-1 loading starts, 1-to-0 loading is finished
-    output reg [7:0] rom_do,        // first 64 bytes are snes header + 32 bytes after snes header 
+    output reg [7:0] rom_do,        // first 64 bytes are sgametank header + 32 bytes after sgametank header 
     output reg rom_do_valid,        // strobe for rom_do
 
     // PCXT management interface

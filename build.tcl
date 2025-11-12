@@ -1,7 +1,7 @@
 if {$argc == 0} {
     puts "Usage: $argv0 <device> <controller>"
     puts "          device: nano20k, primer25k, mega60k, mega138k, console60k, console138k"
-    puts "      controller: snes, ds2"
+    puts "      controller: sgametank, ds2"
     puts "Note: nano20k supports both controllers simultaneously, so build with just: gw_sh build.tcl nano20k"
     exit 1
 }
@@ -19,15 +19,15 @@ if {$dev eq "nano20k"} {
     add_file src/boards/nano20k.v
     add_file -type cst "src/boards/nano20k.cst"
     add_file -type verilog "src/pllr/gowin_pll_hdmi.v"
-    add_file -type verilog "src/pllr/gowin_pll_nes.v"
+    add_file -type verilog "src/pllr/gowin_pll_gametank.v"
     add_file -type sdc "src/boards/nano20k.sdc"
     # nano20k supports both controllers simultaneously
     set_option -output_base_name gametang_${dev}
 } elseif {$dev eq "primer25k"} {
     set_device GW5A-LV25MG121NC1/I0 -device_version A
-    if {$controller eq "snes"} {
-        add_file src/boards/primer25k_snescontroller.v
-        add_file -type cst "src/boards/primer25k_snescontroller.cst"
+    if {$controller eq "sgametank"} {
+        add_file src/boards/primer25k_sgametankcontroller.v
+        add_file -type cst "src/boards/primer25k_sgametankcontroller.cst"
     } elseif {$controller eq "ds2"} {
         add_file src/boards/primer25k.v
         add_file -type cst "src/boards/primer25k.cst"
@@ -36,16 +36,16 @@ if {$dev eq "nano20k"} {
     }
     add_file -type verilog "src/plla/gowin_pll_27.v"
     add_file -type verilog "src/plla/gowin_pll_hdmi.v"
-    add_file -type verilog "src/plla/gowin_pll_nes.v"
+    add_file -type verilog "src/plla/gowin_pll_gametank.v"
     add_file -type verilog "src/plla/pll_12.v"
     add_file -type verilog "src/usb_hid_host.v"
     add_file -type sdc "src/gametang.sdc"
     set_option -output_base_name gametang_${dev}_${controller}
 } elseif {$dev eq "mega60k"} {
     set_device GW5AT-LV60PG484AC1/I0 -device_version B
-    if {$controller eq "snes"} {
-        add_file src/boards/mega60k_snescontroller.v
-        add_file -type cst "src/boards/mega60k_snescontroller.cst"
+    if {$controller eq "sgametank"} {
+        add_file src/boards/mega60k_sgametankcontroller.v
+        add_file -type cst "src/boards/mega60k_sgametankcontroller.cst"
     } elseif {$controller eq "ds2"} {
         add_file src/boards/mega60k.v
         add_file -type cst "src/boards/mega60k.cst"
@@ -55,14 +55,14 @@ if {$dev eq "nano20k"} {
     # mega60k uses the same PLL as primer25k
     add_file -type verilog "src/plla/gowin_pll_27.v"
     add_file -type verilog "src/plla/gowin_pll_hdmi.v"
-    add_file -type verilog "src/plla/gowin_pll_nes.v"
+    add_file -type verilog "src/plla/gowin_pll_gametank.v"
     add_file -type sdc "src/gametang.sdc"
     set_option -output_base_name gametang_${dev}_${controller}
 } elseif {$dev eq "mega138k"} {
     set_device GW5AST-LV138PG484AC1/I0 -device_version B
-    if {$controller eq "snes"} {
-        add_file src/boards/mega138k_snescontroller.v
-        add_file -type cst "src/boards/mega138k_snescontroller.cst"
+    if {$controller eq "sgametank"} {
+        add_file src/boards/mega138k_sgametankcontroller.v
+        add_file -type cst "src/boards/mega138k_sgametankcontroller.cst"
     } elseif {$controller eq "ds2"} {
         add_file src/boards/mega138k.v
         # pin-to-pin compatible with mega60k
@@ -73,14 +73,14 @@ if {$dev eq "nano20k"} {
     # GW5AST-138B uses a different PLL as GW5AT-60B
     add_file -type verilog "src/pll/gowin_pll_27.v"
     add_file -type verilog "src/pll/gowin_pll_hdmi.v"
-    add_file -type verilog "src/pll/gowin_pll_nes.v"
+    add_file -type verilog "src/pll/gowin_pll_gametank.v"
     add_file -type sdc "src/gametang.sdc"
     set_option -output_base_name gametang_${dev}_${controller}
 } elseif {$dev eq "console60k"} {
     set_device GW5AT-LV60PG484AC1/I0 -device_version B
-    if {$controller eq "snes"} {
-        add_file src/boards/console60k_snescontroller.v
-        add_file -type cst "src/boards/console60k_snescontroller.cst"
+    if {$controller eq "sgametank"} {
+        add_file src/boards/console60k_sgametankcontroller.v
+        add_file -type cst "src/boards/console60k_sgametankcontroller.cst"
     } elseif {$controller eq "ds2"} {
         add_file src/boards/console60k.v
         add_file -type cst "src/boards/console.cst"
@@ -90,7 +90,7 @@ if {$dev eq "nano20k"} {
     # mega60k uses the same PLL as primer25k
     add_file -type verilog "src/plla/gowin_pll_27.v"
     add_file -type verilog "src/plla/gowin_pll_hdmi.v"
-    add_file -type verilog "src/plla/gowin_pll_nes.v"
+    add_file -type verilog "src/plla/gowin_pll_gametank.v"
     add_file -type verilog "src/plla/pll_12.v"
     add_file -type verilog "src/usb_hid_host.v"
     add_file -type sdc "src/gametang.sdc"
@@ -101,7 +101,7 @@ if {$dev eq "nano20k"} {
     add_file -type cst "src/boards/console.cst"
     add_file -type verilog "src/pll/gowin_pll_27.v"
     add_file -type verilog "src/pll/gowin_pll_hdmi.v"
-    add_file -type verilog "src/pll/gowin_pll_nes.v"
+    add_file -type verilog "src/pll/gowin_pll_gametank.v"
     add_file -type verilog "src/pll/pll_12.v"
     add_file -type verilog "src/usb_hid_host.v"
     add_file -type sdc "src/gametang.sdc"
@@ -118,7 +118,7 @@ add_file -type verilog "src/apu.v"
 add_file -type verilog "src/autofire.v"
 add_file -type verilog "src/cart.sv"
 add_file -type verilog "src/compat.v"
-add_file -type verilog "src/controller_snes.v"
+add_file -type verilog "src/controller_sgametank.v"
 add_file -type verilog "src/controller_ds2.sv"
 add_file -type verilog "src/dpram.v"
 add_file -type verilog "src/dualshock_controller.v"
@@ -145,11 +145,11 @@ add_file -type verilog "src/mappers/MMC5.sv"
 add_file -type verilog "src/mappers/Namco.sv"
 add_file -type verilog "src/mappers/Sachen.sv"
 add_file -type verilog "src/mappers/Sunsoft.sv"
-add_file -type verilog "src/nes.v"
-add_file -type verilog "src/nes2hdmi.sv"
+add_file -type verilog "src/gametank.v"
+add_file -type verilog "src/gametank2hdmi.sv"
 add_file -type verilog "src/gametang_top.sv"
 add_file -type verilog "src/ppu.v"
-add_file -type verilog "src/sdram_nes.v"
+add_file -type verilog "src/sdram_gametank.v"
 add_file -type verilog "src/t65/T65.v"
 add_file -type verilog "src/t65/T65_ALU.v"
 add_file -type verilog "src/t65/T65_MCode.v"

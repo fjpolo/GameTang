@@ -44,13 +44,13 @@ wire vram_a10;
 wire vram_ce;
 wire irq;
 wire [15:0] flags_out = {14'h0, prg_bus_write, 1'b0};
-wire prg_bus_write = nesprg_oe;
+wire prg_bus_write = gametankprg_oe;
 wire [7:0] prg_dout;
 wire [15:0] audio = audio_in;
 
-wire nesprg_oe;
-wire [7:0] neschrdout;
-wire neschr_oe;
+wire gametankprg_oe;
+wire [7:0] gametankchrdout;
+wire gametankchr_oe;
 wire wram_oe;
 wire wram_we;
 wire prgram_we;
@@ -67,9 +67,9 @@ always @(posedge clk) begin
 	m2[0] <= ce;
 end
 
-MAPN163 n163(m2[7], m2_n, clk, ~enable, prg_write, nesprg_oe, 0,
+MAPN163 n163(m2[7], m2_n, clk, ~enable, prg_write, gametankprg_oe, 0,
 	1, prg_ain, chr_ain, prg_din, 8'b0, prg_dout,
-	neschrdout, neschr_oe, chr_allow, chrram_oe, wram_oe, wram_we, prgram_we,
+	gametankchrdout, gametankchr_oe, chr_allow, chrram_oe, wram_oe, wram_we, prgram_we,
 	prgram_oe, chr_aoutm, ramprgaout, irq, vram_ce, exp6,
 	0, 7'b1111111, 6'b111111, flags[14], flags[16], flags[15],
 	ce, (flags[7:0]==210), flags[24:21], audio_dout);
@@ -96,18 +96,18 @@ module MAPN163(     //signal descriptions in powerpak.v
 	input clk20,
 
 	input reset,
-	input nesprg_we,
-	output nesprg_oe,
-	input neschr_rd,
-	input neschr_wr,
+	input gametankprg_we,
+	output gametankprg_oe,
+	input gametankchr_rd,
+	input gametankchr_wr,
 	input [15:0] prgain,
 	input [13:0] chrain,
-	input [7:0] nesprgdin,
+	input [7:0] gametankprgdin,
 	input [7:0] ramprgdin,
-	output reg [7:0] nesprgdout,
+	output reg [7:0] gametankprgdout,
 
-	output [7:0] neschrdout,
-	output neschr_oe,
+	output [7:0] gametankchrdout,
+	output gametankchr_oe,
 
 	output reg chrram_we,
 	output reg chrram_oe,
@@ -146,23 +146,23 @@ wire submapper1 = (submapper == 1);
 always@(posedge clk20) begin
 	if (reset) begin
 		mirror <= cfg_vertical ? 2'b01 : 2'b10;
-	end else if(ce && nesprg_we)
+	end else if(ce && gametankprg_we)
 		case(prgain[15:11])
-			5'b10000: chr0<=nesprgdin;              //8000
-			5'b10001: chr1<=nesprgdin;
-			5'b10010: chr2<=nesprgdin;              //9000
-			5'b10011: chr3<=nesprgdin;
-			5'b10100: chr4<=nesprgdin;              //A000
-			5'b10101: chr5<=nesprgdin;
-			5'b10110: chr6<=nesprgdin;              //B000
-			5'b10111: chr7<=nesprgdin;
-			5'b11000: chr10<=nesprgdin;             //C000
-			5'b11001: chr11<=nesprgdin;
-			5'b11010: chr12<=nesprgdin;             //D000
-			5'b11011: chr13<=nesprgdin;
-			5'b11100: {mirror,prg89}<=nesprgdin;    //E000
-			5'b11101: {chr_en,prgAB}<=nesprgdin;    //E800
-			5'b11110: prgCD<=nesprgdin[5:0];        //F000
+			5'b10000: chr0<=gametankprgdin;              //8000
+			5'b10001: chr1<=gametankprgdin;
+			5'b10010: chr2<=gametankprgdin;              //9000
+			5'b10011: chr3<=gametankprgdin;
+			5'b10100: chr4<=gametankprgdin;              //A000
+			5'b10101: chr5<=gametankprgdin;
+			5'b10110: chr6<=gametankprgdin;              //B000
+			5'b10111: chr7<=gametankprgdin;
+			5'b11000: chr10<=gametankprgdin;             //C000
+			5'b11001: chr11<=gametankprgdin;
+			5'b11010: chr12<=gametankprgdin;             //D000
+			5'b11011: chr13<=gametankprgdin;
+			5'b11100: {mirror,prg89}<=gametankprgdin;    //E000
+			5'b11101: {chr_en,prgAB}<=gametankprgdin;    //E800
+			5'b11110: prgCD<=gametankprgdin[5:0];        //F000
 			//5'b11111:                             //F800 (sound)
 			default:;
 		endcase
@@ -181,13 +181,13 @@ if (ce) begin
 	else if(count==16'hFFFF)
 		timeout<=1;
 
-	if(nesprg_we & prgain[15:11]==5'b01010)
-		count[7:0]<=nesprgdin;
+	if(gametankprg_we & prgain[15:11]==5'b01010)
+		count[7:0]<=gametankprgdin;
 	else if(countup)
 		count[7:0]<=count_next[7:0];
 
-	if(nesprg_we & prgain[15:11]==5'b01011)
-		count[15:8]<=nesprgdin;
+	if(gametankprg_we & prgain[15:11]==5'b01011)
+		count[15:8]<=gametankprgdin;
 	else if(countup)
 		count[15:8]<=count_next[15:8];
 	end
@@ -229,13 +229,13 @@ always@* begin
 
 	if(!chrain[13]) begin
 		ciram_ce=chrram && ~mapper210;
-		chrram_oe=neschr_rd;
-		chrram_we=neschr_wr & chrram;
+		chrram_oe=gametankchr_rd;
+		chrram_we=gametankchr_wr & chrram;
 		ramchraout[10]=chrbank[10];
 	end else begin
 		ciram_ce=(&chrbank[17:15]) | mapper210;
-		chrram_oe=~ciram_ce & neschr_rd;
-		chrram_we=~ciram_ce & neschr_wr & chrram;
+		chrram_oe=~ciram_ce & gametankchr_rd;
+		chrram_we=~ciram_ce & gametankchr_wr & chrram;
 		casez({mapper210,submapper1,mirror,cfg_vertical})
 			5'b0?_??_?: ramchraout[10] = chrbank[10];
 			//5'b0?_?1_?: ramchraout[10] = chrain[10];
@@ -252,31 +252,31 @@ always@* begin
 	ramchraout[18]=ciram_ce;
 end
 
-assign wram_oe=m2_n & ~nesprg_we & prgain[15:13]==3'b011;
-assign wram_we=m2_n &  nesprg_we & prgain[15:13]==3'b011;
+assign wram_oe=m2_n & ~gametankprg_we & prgain[15:13]==3'b011;
+assign wram_we=m2_n &  gametankprg_we & prgain[15:13]==3'b011;
 
 assign prgram_we=0;
-assign prgram_oe= ~cfg_boot & m2_n & ~nesprg_we & prgain[15];
+assign prgram_oe= ~cfg_boot & m2_n & ~gametankprg_we & prgain[15];
 
 wire config_rd = 0;
 //wire [7:0] gg_out;
-//gamegenie gg(m2, reset, nesprg_we, prgain, nesprgdin, ramprgdin, gg_out, config_rd);
+//gamegenie gg(m2, reset, gametankprg_we, prgain, gametankprgdin, ramprgdin, gg_out, config_rd);
 
 //PRG data out
-wire mapper_oe = m2_n & ~nesprg_we & ((prgain[15:12]=='b0101) || (prgain[15:11]=='b01001));
+wire mapper_oe = m2_n & ~gametankprg_we & ((prgain[15:12]=='b0101) || (prgain[15:11]=='b01001));
 always @* begin
 	case(prgain[15:11])
-		5'b01001: nesprgdout=audio_dout;
-		5'b01010: nesprgdout=count[7:0];
-		5'b01011: nesprgdout=count[15:8];
-		default: nesprgdout=nesprgdin;
+		5'b01001: gametankprgdout=audio_dout;
+		5'b01010: gametankprgdout=count[7:0];
+		5'b01011: gametankprgdout=count[15:8];
+		default: gametankprgdout=gametankprgdin;
 	endcase
 end
 
-assign nesprg_oe=wram_oe | prgram_oe | mapper_oe | config_rd;
+assign gametankprg_oe=wram_oe | prgram_oe | mapper_oe | config_rd;
 
-assign neschr_oe=0;
-assign neschrdout=0;
+assign gametankchr_oe=0;
+assign gametankchrdout=0;
 
 endmodule
 

@@ -1,6 +1,6 @@
 // MMC3 style mappers. Some of these can probably be consolidated.
 
-// iNES mapper 64 and 158 - Tengen's version of MMC3
+// iGAMETANK mapper 64 and 158 - Tengen's version of MMC3
 module Rambo1(
 	input        clk,         // System clock
 	input        ce,          // M2 ~cpu_clk

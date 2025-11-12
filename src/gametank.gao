@@ -79,48 +79,48 @@
                 <Signal>iosys/rom_do_buf[9]</Signal>
                 <Signal>iosys/rom_do_buf[8]</Signal>
             </Bus>
-            <Bus capture_enable="true" name="nes/cpu/A[15:0]">
-                <Signal>nes/cpu/A[15]</Signal>
-                <Signal>nes/cpu/A[14]</Signal>
-                <Signal>nes/cpu/A[13]</Signal>
-                <Signal>nes/cpu/A[12]</Signal>
-                <Signal>nes/cpu/A[11]</Signal>
-                <Signal>nes/cpu/A[10]</Signal>
-                <Signal>nes/cpu/A[9]</Signal>
-                <Signal>nes/cpu/A[8]</Signal>
-                <Signal>nes/cpu/A[7]</Signal>
-                <Signal>nes/cpu/A[6]</Signal>
-                <Signal>nes/cpu/A[5]</Signal>
-                <Signal>nes/cpu/A[4]</Signal>
-                <Signal>nes/cpu/A[3]</Signal>
-                <Signal>nes/cpu/A[2]</Signal>
-                <Signal>nes/cpu/A[1]</Signal>
-                <Signal>nes/cpu/A[0]</Signal>
+            <Bus capture_enable="true" name="gametank/cpu/A[15:0]">
+                <Signal>gametank/cpu/A[15]</Signal>
+                <Signal>gametank/cpu/A[14]</Signal>
+                <Signal>gametank/cpu/A[13]</Signal>
+                <Signal>gametank/cpu/A[12]</Signal>
+                <Signal>gametank/cpu/A[11]</Signal>
+                <Signal>gametank/cpu/A[10]</Signal>
+                <Signal>gametank/cpu/A[9]</Signal>
+                <Signal>gametank/cpu/A[8]</Signal>
+                <Signal>gametank/cpu/A[7]</Signal>
+                <Signal>gametank/cpu/A[6]</Signal>
+                <Signal>gametank/cpu/A[5]</Signal>
+                <Signal>gametank/cpu/A[4]</Signal>
+                <Signal>gametank/cpu/A[3]</Signal>
+                <Signal>gametank/cpu/A[2]</Signal>
+                <Signal>gametank/cpu/A[1]</Signal>
+                <Signal>gametank/cpu/A[0]</Signal>
             </Bus>
-            <Bus capture_enable="true" name="nes/cpu/MCycle[2:0]">
-                <Signal>nes/cpu/MCycle[2]</Signal>
-                <Signal>nes/cpu/MCycle[1]</Signal>
-                <Signal>nes/cpu/MCycle[0]</Signal>
+            <Bus capture_enable="true" name="gametank/cpu/MCycle[2:0]">
+                <Signal>gametank/cpu/MCycle[2]</Signal>
+                <Signal>gametank/cpu/MCycle[1]</Signal>
+                <Signal>gametank/cpu/MCycle[0]</Signal>
             </Bus>
-            <Bus capture_enable="true" name="nes/cpu/DI[7:0]">
-                <Signal>nes/cpu/DI[7]</Signal>
-                <Signal>nes/cpu/DI[6]</Signal>
-                <Signal>nes/cpu/DI[5]</Signal>
-                <Signal>nes/cpu/DI[4]</Signal>
-                <Signal>nes/cpu/DI[3]</Signal>
-                <Signal>nes/cpu/DI[2]</Signal>
-                <Signal>nes/cpu/DI[1]</Signal>
-                <Signal>nes/cpu/DI[0]</Signal>
+            <Bus capture_enable="true" name="gametank/cpu/DI[7:0]">
+                <Signal>gametank/cpu/DI[7]</Signal>
+                <Signal>gametank/cpu/DI[6]</Signal>
+                <Signal>gametank/cpu/DI[5]</Signal>
+                <Signal>gametank/cpu/DI[4]</Signal>
+                <Signal>gametank/cpu/DI[3]</Signal>
+                <Signal>gametank/cpu/DI[2]</Signal>
+                <Signal>gametank/cpu/DI[1]</Signal>
+                <Signal>gametank/cpu/DI[0]</Signal>
             </Bus>
-            <Bus capture_enable="true" name="nes/cpu/DO[7:0]">
-                <Signal>nes/cpu/DO[7]</Signal>
-                <Signal>nes/cpu/DO[6]</Signal>
-                <Signal>nes/cpu/DO[5]</Signal>
-                <Signal>nes/cpu/DO[4]</Signal>
-                <Signal>nes/cpu/DO[3]</Signal>
-                <Signal>nes/cpu/DO[2]</Signal>
-                <Signal>nes/cpu/DO[1]</Signal>
-                <Signal>nes/cpu/DO[0]</Signal>
+            <Bus capture_enable="true" name="gametank/cpu/DO[7:0]">
+                <Signal>gametank/cpu/DO[7]</Signal>
+                <Signal>gametank/cpu/DO[6]</Signal>
+                <Signal>gametank/cpu/DO[5]</Signal>
+                <Signal>gametank/cpu/DO[4]</Signal>
+                <Signal>gametank/cpu/DO[3]</Signal>
+                <Signal>gametank/cpu/DO[2]</Signal>
+                <Signal>gametank/cpu/DO[1]</Signal>
+                <Signal>gametank/cpu/DO[0]</Signal>
             </Bus>
             <Bus capture_enable="true" name="sdram/cycle[11:0]">
                 <Signal>sdram/cycle[11]</Signal>
@@ -136,27 +136,27 @@
                 <Signal>sdram/cycle[1]</Signal>
                 <Signal>sdram/cycle[0]</Signal>
             </Bus>
-            <Signal capture_enable="true">nes/prg_allow</Signal>
-            <Signal capture_enable="true">nes/prg_read</Signal>
-            <Bus capture_enable="true" name="loader/ines[4][7:0]">
-                <Signal>loader/ines[4][7]</Signal>
-                <Signal>loader/ines[4][6]</Signal>
-                <Signal>loader/ines[4][5]</Signal>
-                <Signal>loader/ines[4][4]</Signal>
-                <Signal>loader/ines[4][3]</Signal>
-                <Signal>loader/ines[4][2]</Signal>
-                <Signal>loader/ines[4][1]</Signal>
-                <Signal>loader/ines[4][0]</Signal>
+            <Signal capture_enable="true">gametank/prg_allow</Signal>
+            <Signal capture_enable="true">gametank/prg_read</Signal>
+            <Bus capture_enable="true" name="loader/igametank[4][7:0]">
+                <Signal>loader/igametank[4][7]</Signal>
+                <Signal>loader/igametank[4][6]</Signal>
+                <Signal>loader/igametank[4][5]</Signal>
+                <Signal>loader/igametank[4][4]</Signal>
+                <Signal>loader/igametank[4][3]</Signal>
+                <Signal>loader/igametank[4][2]</Signal>
+                <Signal>loader/igametank[4][1]</Signal>
+                <Signal>loader/igametank[4][0]</Signal>
             </Bus>
-            <Bus capture_enable="true" name="loader/ines[5][7:0]">
-                <Signal>loader/ines[5][7]</Signal>
-                <Signal>loader/ines[5][6]</Signal>
-                <Signal>loader/ines[5][5]</Signal>
-                <Signal>loader/ines[5][4]</Signal>
-                <Signal>loader/ines[5][3]</Signal>
-                <Signal>loader/ines[5][2]</Signal>
-                <Signal>loader/ines[5][1]</Signal>
-                <Signal>loader/ines[5][0]</Signal>
+            <Bus capture_enable="true" name="loader/igametank[5][7:0]">
+                <Signal>loader/igametank[5][7]</Signal>
+                <Signal>loader/igametank[5][6]</Signal>
+                <Signal>loader/igametank[5][5]</Signal>
+                <Signal>loader/igametank[5][4]</Signal>
+                <Signal>loader/igametank[5][3]</Signal>
+                <Signal>loader/igametank[5][2]</Signal>
+                <Signal>loader/igametank[5][1]</Signal>
+                <Signal>loader/igametank[5][0]</Signal>
             </Bus>
             <Bus capture_enable="true" name="rv_addr_Z[9:2]">
                 <Signal>rv_addr_Z[9]</Signal>

@@ -245,8 +245,8 @@ always @(posedge clk) if (ppu_ce) begin
 end
 
 // Mirroring bits
-// %00 = NES internal NTA
-// %01 = NES internal NTB
+// %00 = GAMETANK internal NTA
+// %01 = GAMETANK internal NTB
 // %10 = use ExRAM as NT
 // %11 = Fill Mode
 wire [1:0] mirrbits = (chr_ain[11:10] == 0) ? mirroring[1:0] :

@@ -1,13 +1,13 @@
-// NES video and sound to HDMI converter
+// GAMETANK video and sound to HDMI converter
 // nand2mario, 2022.9
 
 `timescale 1ns / 1ps
 
-module nes2hdmi (
-	input clk,      // nes clock
+module gametank2hdmi (
+	input clk,      // gametank clock
 	input resetn,
 
-    // nes video signals
+    // gametank video signals
     input [5:0] color,
     input [8:0] cycle,
     input [8:0] scanline,
@@ -33,8 +33,8 @@ module nes2hdmi (
 	output [2:0] tmds_d_p
 );
 
-// NES generates 256x240. We assume the center 256x224 is visible and scale that to 4:3 aspect ratio.
-// https://www.nesdev.org/wiki/Overscan
+// GAMETANK generates 256x240. We assume the center 256x224 is visible and scale that to 4:3 aspect ratio.
+// https://www.gametankdev.org/wiki/Overscan
 
 localparam FRAMEWIDTH = 1280;
 localparam FRAMEHEIGHT = 720;
@@ -183,7 +183,7 @@ always @(posedge clk_pixel) begin
     end
 
     cy_r <= cy;
-    if (cy[0] != cy_r[0]) begin         // increment yy at new lines
+    if (cy[0] != cy_r[0]) begin         // increment yy at new ligametank
         ycnt <= ycnt_next;
         if (ycnt_next >= 720) begin
             ycnt <= ycnt_next - 720;
@@ -204,13 +204,13 @@ always @(posedge clk_pixel) begin
 end
 
 // calc rgb value to hdmi
-reg [23:0] NES_PALETTE [0:63];
+reg [23:0] GAMETANK_PALETTE [0:63];
 always @(posedge clk_pixel) begin
     if (active) begin
         if (overlay)
             rgb <= {overlay_color[4:0],3'b0,overlay_color[9:5],3'b0,overlay_color[14:10],3'b0};       // BGR5 to RGB8
         else
-            rgb <= NES_PALETTE[mem_portB_rdata];
+            rgb <= GAMETANK_PALETTE[mem_portB_rdata];
     end else
         rgb <= 24'h303030;
 end
@@ -247,22 +247,22 @@ ELVDS_OBUF tmds_bufds [3:0] (
     .OB({tmds_clk_n, tmds_d_n})
 );
 
-// 2C02 palette: https://www.nesdev.org/wiki/PPU_palettes
-assign NES_PALETTE[0] = 24'h545454;  assign NES_PALETTE[1] = 24'h001e74;  assign NES_PALETTE[2] = 24'h081090;  assign NES_PALETTE[3] = 24'h300088;  
-assign NES_PALETTE[4] = 24'h440064;  assign NES_PALETTE[5] = 24'h5c0030;  assign NES_PALETTE[6] = 24'h540400;  assign NES_PALETTE[7] = 24'h3c1800;
-assign NES_PALETTE[8] = 24'h202a00;  assign NES_PALETTE[9] = 24'h083a00;  assign NES_PALETTE[10] = 24'h004000;  assign NES_PALETTE[11] = 24'h003c00;  
-assign NES_PALETTE[12] = 24'h00323c;  assign NES_PALETTE[13] = 24'h000000;  assign NES_PALETTE[14] = 24'h000000;  assign NES_PALETTE[15] = 24'h000000;
-assign NES_PALETTE[16] = 24'h989698;  assign NES_PALETTE[17] = 24'h084cc4;  assign NES_PALETTE[18] = 24'h3032ec;  assign NES_PALETTE[19] = 24'h5c1ee4;  
-assign NES_PALETTE[20] = 24'h8814b0;  assign NES_PALETTE[21] = 24'ha01464;  assign NES_PALETTE[22] = 24'h982220;  assign NES_PALETTE[23] = 24'h783c00;
-assign NES_PALETTE[24] = 24'h545a00;  assign NES_PALETTE[25] = 24'h287200;  assign NES_PALETTE[26] = 24'h087c00;  assign NES_PALETTE[27] = 24'h007628; 
-assign NES_PALETTE[28] = 24'h006678;  assign NES_PALETTE[29] = 24'h000000;  assign NES_PALETTE[30] = 24'h000000;  assign NES_PALETTE[31] = 24'h000000;
-assign NES_PALETTE[32] = 24'heceeec;  assign NES_PALETTE[33] = 24'h4c9aec;  assign NES_PALETTE[34] = 24'h787cec;  assign NES_PALETTE[35] = 24'hb062ec;  
-assign NES_PALETTE[36] = 24'he454ec;  assign NES_PALETTE[37] = 24'hec58b4;  assign NES_PALETTE[38] = 24'hec6a64;  assign NES_PALETTE[39] = 24'hd48820;
-assign NES_PALETTE[40] = 24'ha0aa00;  assign NES_PALETTE[41] = 24'h74c400;  assign NES_PALETTE[42] = 24'h4cd020;  assign NES_PALETTE[43] = 24'h38cc6c; 
-assign NES_PALETTE[44] = 24'h38b4cc;  assign NES_PALETTE[45] = 24'h3c3c3c;  assign NES_PALETTE[46] = 24'h000000;  assign NES_PALETTE[47] = 24'h000000;
-assign NES_PALETTE[48] = 24'heceeec;  assign NES_PALETTE[49] = 24'ha8ccec;  assign NES_PALETTE[50] = 24'hbcbcec;  assign NES_PALETTE[51] = 24'hd4b2ec;
-assign NES_PALETTE[52] = 24'hecaeec;  assign NES_PALETTE[53] = 24'hecaed4;  assign NES_PALETTE[54] = 24'hecb4b0;  assign NES_PALETTE[55] = 24'he4c490;
-assign NES_PALETTE[56] = 24'hccd278;  assign NES_PALETTE[57] = 24'hb4de78;  assign NES_PALETTE[58] = 24'ha8e290;  assign NES_PALETTE[59] = 24'h98e2b4;
-assign NES_PALETTE[60] = 24'ha0d6e4;  assign NES_PALETTE[61] = 24'ha0a2a0;  assign NES_PALETTE[62] = 24'h000000;  assign NES_PALETTE[63] = 24'h000000;
+// 2C02 palette: https://www.gametankdev.org/wiki/PPU_palettes
+assign GAMETANK_PALETTE[0] = 24'h545454;  assign GAMETANK_PALETTE[1] = 24'h001e74;  assign GAMETANK_PALETTE[2] = 24'h081090;  assign GAMETANK_PALETTE[3] = 24'h300088;  
+assign GAMETANK_PALETTE[4] = 24'h440064;  assign GAMETANK_PALETTE[5] = 24'h5c0030;  assign GAMETANK_PALETTE[6] = 24'h540400;  assign GAMETANK_PALETTE[7] = 24'h3c1800;
+assign GAMETANK_PALETTE[8] = 24'h202a00;  assign GAMETANK_PALETTE[9] = 24'h083a00;  assign GAMETANK_PALETTE[10] = 24'h004000;  assign GAMETANK_PALETTE[11] = 24'h003c00;  
+assign GAMETANK_PALETTE[12] = 24'h00323c;  assign GAMETANK_PALETTE[13] = 24'h000000;  assign GAMETANK_PALETTE[14] = 24'h000000;  assign GAMETANK_PALETTE[15] = 24'h000000;
+assign GAMETANK_PALETTE[16] = 24'h989698;  assign GAMETANK_PALETTE[17] = 24'h084cc4;  assign GAMETANK_PALETTE[18] = 24'h3032ec;  assign GAMETANK_PALETTE[19] = 24'h5c1ee4;  
+assign GAMETANK_PALETTE[20] = 24'h8814b0;  assign GAMETANK_PALETTE[21] = 24'ha01464;  assign GAMETANK_PALETTE[22] = 24'h982220;  assign GAMETANK_PALETTE[23] = 24'h783c00;
+assign GAMETANK_PALETTE[24] = 24'h545a00;  assign GAMETANK_PALETTE[25] = 24'h287200;  assign GAMETANK_PALETTE[26] = 24'h087c00;  assign GAMETANK_PALETTE[27] = 24'h007628; 
+assign GAMETANK_PALETTE[28] = 24'h006678;  assign GAMETANK_PALETTE[29] = 24'h000000;  assign GAMETANK_PALETTE[30] = 24'h000000;  assign GAMETANK_PALETTE[31] = 24'h000000;
+assign GAMETANK_PALETTE[32] = 24'heceeec;  assign GAMETANK_PALETTE[33] = 24'h4c9aec;  assign GAMETANK_PALETTE[34] = 24'h787cec;  assign GAMETANK_PALETTE[35] = 24'hb062ec;  
+assign GAMETANK_PALETTE[36] = 24'he454ec;  assign GAMETANK_PALETTE[37] = 24'hec58b4;  assign GAMETANK_PALETTE[38] = 24'hec6a64;  assign GAMETANK_PALETTE[39] = 24'hd48820;
+assign GAMETANK_PALETTE[40] = 24'ha0aa00;  assign GAMETANK_PALETTE[41] = 24'h74c400;  assign GAMETANK_PALETTE[42] = 24'h4cd020;  assign GAMETANK_PALETTE[43] = 24'h38cc6c; 
+assign GAMETANK_PALETTE[44] = 24'h38b4cc;  assign GAMETANK_PALETTE[45] = 24'h3c3c3c;  assign GAMETANK_PALETTE[46] = 24'h000000;  assign GAMETANK_PALETTE[47] = 24'h000000;
+assign GAMETANK_PALETTE[48] = 24'heceeec;  assign GAMETANK_PALETTE[49] = 24'ha8ccec;  assign GAMETANK_PALETTE[50] = 24'hbcbcec;  assign GAMETANK_PALETTE[51] = 24'hd4b2ec;
+assign GAMETANK_PALETTE[52] = 24'hecaeec;  assign GAMETANK_PALETTE[53] = 24'hecaed4;  assign GAMETANK_PALETTE[54] = 24'hecb4b0;  assign GAMETANK_PALETTE[55] = 24'he4c490;
+assign GAMETANK_PALETTE[56] = 24'hccd278;  assign GAMETANK_PALETTE[57] = 24'hb4de78;  assign GAMETANK_PALETTE[58] = 24'ha8e290;  assign GAMETANK_PALETTE[59] = 24'h98e2b4;
+assign GAMETANK_PALETTE[60] = 24'ha0d6e4;  assign GAMETANK_PALETTE[61] = 24'ha0a2a0;  assign GAMETANK_PALETTE[62] = 24'h000000;  assign GAMETANK_PALETTE[63] = 24'h000000;
 
 endmodule

@@ -9,10 +9,10 @@
 
 #include "Vgametang_top.h"
 #include "Vgametang_top_gametang_top.h"
-#include "Vgametang_top_NES.h"
+#include "Vgametang_top_GAMETANK.h"
 #include "verilated.h"
 #include <verilated_fst_c.h>
-#include "nes_palette.h"
+#include "gametank_palette.h"
 
 #define TRACE_ON
 
@@ -54,7 +54,7 @@ void trace_off();
 vluint64_t sim_time;
 int main(int argc, char** argv, char** env) {
 	Verilated::commandArgs(argc, argv);
-	Vgametang_top_NES *nes = top->gametang_top->nes;
+	Vgametang_top_GAMETANK *gametank = top->gametang_top->gametank;
 	bool frame_updated = false;
 	uint64_t start_ticks = SDL_GetPerformanceCounter();
 	int frame_count = 0;
@@ -125,17 +125,17 @@ int main(int argc, char** argv, char** env) {
 			if (trace && sim_time >= start_trace_time)
 				m_trace->dump(sim_time);
 
-			if (nes->scanline >= 0 && nes->scanline < 240 && nes->cycle >= 0 && nes->cycle <= 256) {
-				Pixel* p = &screenbuffer[nes->scanline*H_RES + nes->cycle];
-				int color = nes->color;
+			if (gametank->scanline >= 0 && gametank->scanline < 240 && gametank->cycle >= 0 && gametank->cycle <= 256) {
+				Pixel* p = &screenbuffer[gametank->scanline*H_RES + gametank->cycle];
+				int color = gametank->color;
 				p->a = 0xFF;  // transparency
-				p->r = (NES_PALETTE[color] >> 16) & 0xff;
-				p->g = (NES_PALETTE[color] >> 8) & 0xff;
-				p->b = NES_PALETTE[color] & 0xff;;
+				p->r = (GAMETANK_PALETTE[color] >> 16) & 0xff;
+				p->g = (GAMETANK_PALETTE[color] >> 8) & 0xff;
+				p->b = GAMETANK_PALETTE[color] & 0xff;;
 			}		
 
 			// update texture once per frame (in blanking)
-			if (nes->scanline == V_RES && nes->cycle == 0) {
+			if (gametank->scanline == V_RES && gametank->cycle == 0) {
 				if (!frame_updated) {
 					// check for quit event
 					SDL_Event e;

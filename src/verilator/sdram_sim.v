@@ -1,4 +1,4 @@
-// Simulation model of sdram_nes.v for Verilator
+// Simulation model of sdram_gametank.v for Verilator
 // mclk     /   \___/   \___/   \___/   \___/   \___/   \___
 // clkref   |   1   |   0   |   1   |   0   |   1   |   0   |
 // cpu/ppu  |  req  |       |  data |
@@ -8,7 +8,7 @@
 
 import configPackage::*;
 
-module sdram_nes
+module sdram_gametank
 (
     inout  reg [SDRAM_DATA_WIDTH-1:0] SDRAM_DQ,   // 16 bit bidirectional data bus
     output     [SDRAM_ROW_WIDTH-1:0] SDRAM_A,    // 13 bit multiplexed address bus

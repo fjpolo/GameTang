@@ -188,7 +188,7 @@ module Rs232Rx #(parameter [9:0] WAIT = 10) (input clk, input UART_RX, output [7
 endmodule
 `endif
 
-// Decodes incoming UART signals and demuxes them into addr/data lines.
+// Decodes incoming UART signals and demuxes them into addr/data ligametank.
 // Packet Format: 
 //   1 byte checksum | 1 byte address | 1 byte count | (count + 1) data bytes
 module UartDemux #(parameter FREQ=48_600_000, parameter BAUDRATE=115_200)

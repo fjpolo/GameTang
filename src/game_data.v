@@ -1,4 +1,4 @@
-// zf: Feed INES data to Game_Loader
+// zf: Feed IGAMETANK data to Game_Loader
 module GameData (
     input clk, 
     input reset, 
@@ -8,14 +8,14 @@ module GameData (
 );
 
 // 24KB+ buffer for ROM
-localparam INES_SIZE = 28688; // 28KB + 16
-initial $readmemh("roms/nes15.hex", INES);
-// localparam INES_SIZE = 24592; // 24KB + 16
-// initial $readmemh("roms/helloworld.hex", INES);
+localparam IGAMETANK_SIZE = 28688; // 28KB + 16
+initial $readmemh("roms/gametank15.hex", IGAMETANK);
+// localparam IGAMETANK_SIZE = 24592; // 24KB + 16
+// initial $readmemh("roms/helloworld.hex", IGAMETANK);
 
-reg [7:0] INES[INES_SIZE:0];
+reg [7:0] IGAMETANK[IGAMETANK_SIZE:0];
 reg [1:0] state = 0;
-reg [$clog2(INES_SIZE)-1:0] addr = 0;
+reg [$clog2(IGAMETANK_SIZE)-1:0] addr = 0;
 reg out_clk = 0;
 
 reg [1:0] cnt;
@@ -23,7 +23,7 @@ reg [1:0] cnt;
 always @(posedge clk) begin
     if (reset) begin
         state <= 0;
-        addr <= 0;  // odata gets INES[0]
+        addr <= 0;  // odata gets IGAMETANK[0]
         odata_clk <= 0;
     end else if (state == 0) begin
         // start loading
@@ -36,11 +36,11 @@ always @(posedge clk) begin
         case (cnt)
         2'd0: begin
             // Output one byte to Game_Loader
-            odata <= INES[addr];
+            odata <= IGAMETANK[addr];
             odata_clk <= 1;
         end
         2'd3: begin
-            if (addr == INES_SIZE-1) begin        // done
+            if (addr == IGAMETANK_SIZE-1) begin        // done
                 state <= 2;
                 downloading <= 0;
             end

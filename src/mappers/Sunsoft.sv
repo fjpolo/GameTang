@@ -465,7 +465,7 @@ assign vram_ce = chr_ain[13];
 endmodule
 
 
-// #68 - Sunsoft-4 - Game After Burner, and some japanese games. MAX: 128kB PRG, 256kB CHR
+// #68 - Sunsoft-4 - Game After Burner, and some japagametanke games. MAX: 128kB PRG, 256kB CHR
 module Mapper68(
 	input        clk,         // System clock
 	input        ce,          // M2 ~cpu_clk

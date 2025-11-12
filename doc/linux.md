@@ -1,6 +1,6 @@
 # GAMETang Linux loader
 
-Since 0.4, GAMETang has added Linux loader program support. With a tiny and cheap Linux SBC, now you can enjoy fpga NES games on your living room TV much easier.
+Since 0.4, GAMETang has added Linux loader program support. With a tiny and cheap Linux SBC, now you can enjoy fpga GAMETANK games on your living room TV much easier.
 
 Here's the basic idea,
 

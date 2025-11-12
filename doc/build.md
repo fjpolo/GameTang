@@ -7,9 +7,9 @@ If you want to modify and/or build the project from source, you will need:
 
 ## Build Steps
 
-* Open the Project file `nes.gprj` in GoWin IDE.
+* Open the Project file `gametank.gprj` in GoWin IDE.
 * Go to `Project > Configuration` menu.
-* In `Synthesize > General` tab, go to `Top Module/Entity` textbox and write `NES_Tang20k` (It is case sensitive, be careful!).
+* In `Synthesize > General` tab, go to `Top Module/Entity` textbox and write `GAMETANK_Tang20k` (It is case sensitive, be careful!).
 * In `Synthesize > General` tab, go to `Verilog Language` combobox and select `System Verilog 2017`.
 
 <img src="images/verilog_language_selection.png">

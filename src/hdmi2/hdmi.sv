@@ -191,7 +191,7 @@ endgenerate
 always_comb begin
     hsync <= invert ^ (cx >= screen_width + hsync_pulse_start && cx < screen_width + hsync_pulse_start + hsync_pulse_size);
     // vsync pulses should begin and end at the start of hsync, so special
-    // handling is required for the lines on which vsync starts and ends
+    // handling is required for the ligametank on which vsync starts and ends
     if (cy == screen_height + vsync_pulse_start - 1)
         vsync <= invert ^ (cx >= screen_width + hsync_pulse_start);
     else if (cy == screen_height + vsync_pulse_start + vsync_pulse_size - 1)

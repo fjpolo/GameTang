@@ -21,9 +21,9 @@ module cart_top (
 	input             ppu_ce,
 	input             reset,
 	input      [19:0] ppuflags,       // Misc flags from PPU for MMC5 cheating
-	input      [63:0] flags,          // Misc flags from ines header {prg_size(3), chr_size(3), mapper(8)}
+	input      [63:0] flags,          // Misc flags from igametank header {prg_size(3), chr_size(3), mapper(8)}
 	input      [15:0] prg_ain,        // Better known as "CPU Address in"
-	output reg [21:0] prg_aout,       // PRG Input / Output Address Lines
+	output reg [21:0] prg_aout,       // PRG Input / Output Address Ligametank
 	input             prg_read,       // PRG Read / write signals
 	input             prg_write,
 	input       [7:0] prg_din,        // CPU Data In
@@ -36,7 +36,7 @@ module cart_top (
 	input             chr_write,      // Write to CHR
 	input       [7:0] chr_din,        // PPU Data In
 	input      [13:0] chr_ain,        // Better known as "PPU Address in"
-	output reg [21:0] chr_aout,       // CHR Input / Output Address Lines
+	output reg [21:0] chr_aout,       // CHR Input / Output Address Ligametank
 	output reg  [7:0] chr_dout,       // Value to override CHR data with
 	output reg        has_chr_dout,   // True if CHR data should be overridden
 	output reg        chr_allow,      // CHR Allow write
@@ -742,7 +742,7 @@ Mapper69 map69(
 // Mappers: 71, 232                                                            //
 // Status : Working                                                            //
 // Notes  :                                                                    //
-// Games  : Micro Machines, Big Nose the Caveman                               //
+// Games  : Micro Machigametank, Big Nose the Caveman                               //
 //*****************************************************************************//
 Mapper71 map71(
 	.clk        (clk),
@@ -834,7 +834,7 @@ Mapper77 map77(
 // Name   : Holy Diver                                                         //
 // Mappers: 78, 70, 152                                                        //
 // Status : Needs testing overall                                             //
-// Notes  : Submapper 1 Requires NES 2.0                                       //
+// Notes  : Submapper 1 Requires GAMETANK 2.0                                       //
 // Games  : Holy Diver, Uchuusent                                              //
 //*****************************************************************************//
 Mapper78 map78(
@@ -1148,7 +1148,7 @@ Mapper234 map234(
 // Mappers: 64, 158                                                            //
 // Status : Needs testing.  Irq might be slightly off.                         //
 // Notes  : Consider merging with MMC3                                         //
-// Games  : Rolling Thunder, Klax, Skull and Crossbones, Alien Syndrome (158)  //
+// Games  : Rolling Thunder, Klax, Skull and Crossbogametank, Alien Syndrome (158)  //
 //*****************************************************************************//
 Rambo1 rambo1(
 	.clk        (clk),
@@ -1181,7 +1181,7 @@ Rambo1 rambo1(
 // Notes  : This wraps the MMC1 mapper, consider merging more elegantly        //
 // Games  : Nintendo World Championships 1990 (start hack)                     //
 //*****************************************************************************//
-NesEvent nesev(
+NesEvent gametankev(
 	.clk        (clk),
 	.ce         (ce),
 	.enable     (me[105]),
@@ -1528,7 +1528,7 @@ Sachen8259 sachen(
 // Mappers: 136, 147, 132, 173, 172, 36                                        //
 // Status : Working                                                            //
 // Notes  : 147 only tested with 60 pin version                                //
-// Games  : Wei Lai Xiao Zi (136), Chinese Kungfu (147), Creatom (132),        //
+// Games  : Wei Lai Xiao Zi (136), Chigametanke Kungfu (147), Creatom (132),        //
 //          F-15 City War (173), Mahjong Block (172), Strike Wolf (36)         //
 //*****************************************************************************//
 SachenJV001 sachenj(

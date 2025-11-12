@@ -1486,7 +1486,7 @@ always @(posedge clk) begin
 	end
 
 	// The exact way this works is unknown but is conjectured
-	// to resemble iNES Mapper 096, latching PA9 at start of nametable reads.
+	// to resemble iGAMETANK Mapper 096, latching PA9 at start of nametable reads.
 	// When turned on, both 4K CHR RAM banks 0000-0FFF and 1000-1FFF map to 0000-0FFF 
 	// for scanline 240 until scanline 128. Then at scanline 128, both 4K CHR banks 
 	// point to 1000-1FFF.
@@ -1885,7 +1885,7 @@ wire submapper1 = flags[21];
 wire submapper2 = flags[22];
 
 // mode register bits
-reg [1:0] prgbank_mode; // determines PRG banking mode
+reg [1:0] prgbank_mode; // determigametank PRG banking mode
 reg [1:0] mirroring;
 reg prg_reg3_enable;    // if 1, maps 8 KiB PRG bank to 0x6000-0x7FFF for submapper 0 and 1
 reg irq_mode, irq_latch;

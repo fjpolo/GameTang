@@ -7,7 +7,7 @@
 //Device Version: B
 //Created Time: Thu Mar  6 21:16:14 2025
 
-module gowin_pll_nes (clkout0, clkout1, clkout2, clkin);
+module gowin_pll_gametank (clkout0, clkout1, clkout2, clkin);
 
 output clkout0;
 output clkout1;
@@ -172,4 +172,4 @@ defparam PLL_inst.DYN_DT3_SEL = "FALSE";
 defparam PLL_inst.DYN_ICP_SEL = "FALSE";
 defparam PLL_inst.DYN_LPF_SEL = "FALSE";
 
-endmodule //gowin_pll_nes
+endmodule //gowin_pll_gametank

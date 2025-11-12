@@ -593,7 +593,7 @@ reg [3:0] chr_bank;
 reg mirroring;  // See vram_a10_t
 wire mapper70 = (flags[7:0] == 70);
 wire mapper152 = (flags[7:0] == 152);
-wire onescreen = (flags[22:21] == 1) | mapper152; // default (0 or 3) Holy Diver submapper; (1) JALECO-JF-16
+wire ogametankcreen = (flags[22:21] == 1) | mapper152; // default (0 or 3) Holy Diver submapper; (1) JALECO-JF-16
 always @(posedge clk) begin
 	if (~enable) begin
 		prg_bank <= 0;
@@ -620,7 +620,7 @@ assign vram_ce = chr_ain[13];
 // The a10 VRAM address line. (Used for mirroring)
 reg vram_a10_t;
 always @* begin
-	case({onescreen, mirroring})
+	case({ogametankcreen, mirroring})
 		2'b00: vram_a10_t = chr_ain[11];   // One screen, horizontal
 		2'b01: vram_a10_t = chr_ain[10];   // One screen, vertical
 		2'b10: vram_a10_t = 0;             // One screen, lower bank

@@ -54,9 +54,9 @@ wire irq;
 wire [1:0] diskside_auto;
 wire [15:0] audio = audio_in;
 
-wire nesprg_oe;
-wire [7:0] neschrdout;
-wire neschr_oe;
+wire gametankprg_oe;
+wire [7:0] gametankchrdout;
+wire gametankchr_oe;
 wire wram_oe;
 wire wram_we;
 wire prgram_we;
@@ -71,9 +71,9 @@ always @(posedge clk) begin
 	m2[0] <= ce;
 end
 
-MAPFDS fds(m2[7], m2_n, clk, ~enable, prg_write, nesprg_oe, 0,
+MAPFDS fds(m2[7], m2_n, clk, ~enable, prg_write, gametankprg_oe, 0,
 	1, prg_ain, chr_ain, prg_din, 8'b0, prg_dout, prg_bus_write,
-	neschrdout, neschr_oe, chr_allow, chrram_oe, wram_oe, wram_we, prgram_we,
+	gametankchrdout, gametankchr_oe, chr_allow, chrram_oe, wram_oe, wram_we, prgram_we,
 	prgram_oe, chr_aout[18:10], prg_aout[18:0], irq, vram_ce, exp6,
 	0, 7'b1111111, 6'b111111, flags[14], flags[16], flags[15],
 	ce, prg_allow, audio_dout, diskside_auto, diskside, fds_busy, fds_eject);
@@ -96,19 +96,19 @@ module MAPFDS(              //signal descriptions in powerpak.v
 	input clk20,
 
 	input reset,
-	input nesprg_we,
-	output nesprg_oe,
-	input neschr_rd,
-	input neschr_wr,
+	input gametankprg_we,
+	output gametankprg_oe,
+	input gametankchr_rd,
+	input gametankchr_wr,
 	input [15:0] prgain,
 	input [13:0] chrain,
-	input [7:0] nesprgdin,
+	input [7:0] gametankprgdin,
 	input [7:0] ramprgdin,
-	output reg [7:0] nesprgdout,
+	output reg [7:0] gametankprgdout,
 	output prg_bus_write,
 
-	output [7:0] neschrdout,
-	output neschr_oe,
+	output [7:0] gametankchrdout,
+	output gametankchr_oe,
 
 	output chrram_we,
 	output chrram_oe,
@@ -141,8 +141,8 @@ module MAPFDS(              //signal descriptions in powerpak.v
 
 	localparam WRITE_LO=16'hF4CD, WRITE_HI=16'hF4CE, READ_LO=16'hF4D0, READ_HI=16'hF4D1;
 
-	assign neschrdout = 0;
-	assign neschr_oe = 0;
+	assign gametankchrdout = 0;
+	assign gametankchr_oe = 0;
 	assign exp6 = 0;
 
 	wire disk_eject;
@@ -150,17 +150,17 @@ module MAPFDS(              //signal descriptions in powerpak.v
 	reg [1:0] Wstate;
 	reg [1:0] Rstate;
 
-	assign chrram_we=!chrain[13] & neschr_wr;
-	assign chrram_oe=!chrain[13] & neschr_rd;
+	assign chrram_we=!chrain[13] & gametankchr_wr;
+	assign chrram_oe=!chrain[13] & gametankchr_rd;
 
 	assign wram_we=0; //use main ram for everything
 	assign wram_oe=0;
 
-	assign prgram_we=~cfg_boot & m2_n &  nesprg_we & (Wstate==2 | (prgain[15]^(&prgain[14:13])));       //6000-DFFF or disk write
-	assign prgram_oe=~cfg_boot & m2_n & ~nesprg_we & (prgain[15] | prgain[15:13]==3);                   //6000-FFFF
-	wire   fds_oe=               m2_n & ~nesprg_we & (prgain[15:12]==4) & (|prgain[7:5] | prgain[9]);   //$4xxx (except 00-1F) or 42xx
+	assign prgram_we=~cfg_boot & m2_n &  gametankprg_we & (Wstate==2 | (prgain[15]^(&prgain[14:13])));       //6000-DFFF or disk write
+	assign prgram_oe=~cfg_boot & m2_n & ~gametankprg_we & (prgain[15] | prgain[15:13]==3);                   //6000-FFFF
+	wire   fds_oe=               m2_n & ~gametankprg_we & (prgain[15:12]==4) & (|prgain[7:5] | prgain[9]);   //$4xxx (except 00-1F) or 42xx
 
-	assign nesprg_oe=prgram_oe | fds_oe;
+	assign gametankprg_oe=prgram_oe | fds_oe;
 
 	reg saved=0;
 	reg [15:0] diskpos;
@@ -222,12 +222,12 @@ always@(posedge clk20)
 					if(prgain==16'hE1FA) infinite_loop_on_E233 <= 0;
 
 					// activate infinite loop if @$2000 is written with NMI (bit 7) high during FileLoad subroutine
-					if((prgain==16'h2000) && (within_loader == 1) && (nesprgdin[7])) infinite_loop_on_E233 <= 1;
+					if((prgain==16'h2000) && (within_loader == 1) && (gametankprgdin[7])) infinite_loop_on_E233 <= 1;
 				end
 
 		end
 
-//NES data out
+//GAMETANK data out
 wire match0=prgain==16'h4030;       //IRQ status
 wire match1=prgain==16'h4032;       //drive status
 wire match2=prgain==16'h4033;       //power / exp
@@ -242,26 +242,26 @@ wire match10=prgain==16'h4029;      //MiSTer Busy
 always @* begin
 	fds_prg_bus_write = 1'b1;
 	case(1)
-		match0: nesprgdout={7'd0, timer_irq};
-		match1: nesprgdout={5'd0, disk_eject, diskend, disk_eject};
-		match2: nesprgdout=8'b10000000;
-		match3: nesprgdout=romoffset[7:0];
-		match4: nesprgdout={3'b111,romoffset[12:8]};
-		match5: nesprgdout={7'd0,saved};
-		match6: nesprgdout=audio_dout;
-		match7: nesprgdout=8'h4C;  // when infinite loop is active replace jsr $E778 with jmp $E233
-		match8: nesprgdout=8'h33;
-		match9: nesprgdout=8'hE2;
-		match10:nesprgdout={7'd0,~fds_busy};//MiSTer busy (zero = busy)
+		match0: gametankprgdout={7'd0, timer_irq};
+		match1: gametankprgdout={5'd0, disk_eject, diskend, disk_eject};
+		match2: gametankprgdout=8'b10000000;
+		match3: gametankprgdout=romoffset[7:0];
+		match4: gametankprgdout={3'b111,romoffset[12:8]};
+		match5: gametankprgdout={7'd0,saved};
+		match6: gametankprgdout=audio_dout;
+		match7: gametankprgdout=8'h4C;  // when infinite loop is active replace jsr $E778 with jmp $E233
+		match8: gametankprgdout=8'h33;
+		match9: gametankprgdout=8'hE2;
+		match10:gametankprgdout={7'd0,~fds_busy};//MiSTer busy (zero = busy)
 		default: begin
-			nesprgdout=ramprgdin;
+			gametankprgdout=ramprgdin;
 			fds_prg_bus_write = 0;
 		end
 	endcase
 end
 
-assign prg_allow = (nesprg_we & (Wstate==2 | (prgain[15]^(&prgain[14:13]))))
-				| (~nesprg_we & ((prgain[15] & !match3 & !match4 & !match7 & !match8 & !match9) | prgain[15:13]==3));
+assign prg_allow = (gametankprg_we & (Wstate==2 | (prgain[15]^(&prgain[14:13]))))
+				| (~gametankprg_we & ((prgain[15] & !match3 & !match4 & !match7 & !match8 & !match9) | prgain[15:13]==3));
 
 	reg write_en;
 	reg vertical;
@@ -289,17 +289,17 @@ assign prg_allow = (nesprg_we & (Wstate==2 | (prgain[15]^(&prgain[14:13]))))
 				end
 		end
 
-		if(nesprg_we)
+		if(gametankprg_we)
 			case(prgain)
-				16'h4020: timerlatch[7:0]<=nesprgdin;
+				16'h4020: timerlatch[7:0]<=gametankprgdin;
 
-				16'h4021: timerlatch[15:8]<=nesprgdin;
+				16'h4021: timerlatch[15:8]<=gametankprgdin;
 
 				16'h4022: begin
-					timer_irq_repeat<=nesprgdin[0];
-					timer_irq_en<=nesprgdin[1] & disk_reg_en;
+					timer_irq_repeat<=gametankprgdin[0];
+					timer_irq_en<=gametankprgdin[1] & disk_reg_en;
 
-					if (nesprgdin[1] & disk_reg_en) begin
+					if (gametankprgdin[1] & disk_reg_en) begin
 						timer <= timerlatch;
 					end else begin
 						timer_irq <= 0;
@@ -307,8 +307,8 @@ assign prg_allow = (nesprg_we & (Wstate==2 | (prgain[15]^(&prgain[14:13]))))
 				end
 
 				16'h4023: begin
-					disk_reg_en <=nesprgdin[0];
-					if (~nesprgdin[0]) begin
+					disk_reg_en <=gametankprgdin[0];
+					if (~gametankprgdin[0]) begin
 						timer_irq_en <= 0;
 						timer_irq <= 0;
 					end
@@ -316,21 +316,21 @@ assign prg_allow = (nesprg_we & (Wstate==2 | (prgain[15]^(&prgain[14:13]))))
 
 				//16'h4024: //disk data write
 				16'h4025: begin // disk control
-					diskreset<=nesprgdin[1];
-					write_en<=!nesprgdin[2];
-					vertical<=!nesprgdin[3];
-					//disk_irq_en<=nesprgdin[7];
+					diskreset<=gametankprgdin[1];
+					write_en<=!gametankprgdin[2];
+					vertical<=!gametankprgdin[3];
+					//disk_irq_en<=gametankprgdin[7];
 				end
 
 				16'h4027:   //powerpak extra: disk side
-					diskside_auto<=nesprgdin[1:0];
+					diskside_auto<=gametankprgdin[1:0];
 
 				default:;
 			endcase
 	end
 
 	if (m2) begin
-		if (~nesprg_we & prgain==16'h4030)
+		if (~gametankprg_we & prgain==16'h4030)
 			timer_irq <= 0;
 	end
 end
@@ -338,16 +338,16 @@ end
 //watch for disk read/write
 always@(posedge clk20) begin
 	if (m2) begin
-		if(write_en & ~nesprg_we & (prgain==WRITE_LO))
+		if(write_en & ~gametankprg_we & (prgain==WRITE_LO))
 			Wstate<=1;
-		else if(~nesprg_we & (prgain==WRITE_HI) & Wstate==1)
+		else if(~gametankprg_we & (prgain==WRITE_HI) & Wstate==1)
 			Wstate<=2;
 		else
 			Wstate<=0;
 
-		if(~nesprg_we & (prgain==READ_LO))
+		if(~gametankprg_we & (prgain==READ_LO))
 			Rstate<=1;
-		else if(~nesprg_we & (prgain==READ_HI) & Rstate==1)
+		else if(~gametankprg_we & (prgain==READ_HI) & Rstate==1)
 			Rstate<=2;
 		else
 			Rstate<=0;
@@ -380,9 +380,9 @@ assign disk_eject=fds_eject;
 //	if (ce) begin
 //		clkcount<=clkcount+1'd1;
 //		if(prgain==16'h4016) begin
-//			if(nesprg_we)                           control_cnt<=0;
-//			else if(~nesprg_we & control_cnt!=7)    control_cnt<=control_cnt+1'd1;
-//			//if(~nesprg_we & control_cnt==2)          button<=|nesprgdin[1:0];
+//			if(gametankprg_we)                           control_cnt<=0;
+//			else if(~gametankprg_we & control_cnt!=7)    control_cnt<=control_cnt+1'd1;
+//			//if(~gametankprg_we & control_cnt==2)          button<=|gametankprgdin[1:0];
 //		end
 //	end
 //end

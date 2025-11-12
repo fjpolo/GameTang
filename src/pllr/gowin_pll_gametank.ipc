@@ -1,7 +1,7 @@
 [General]
 ipc_version=4
-file=gowin_pll_nes
-module=gowin_pll_nes
+file=gowin_pll_gametank
+module=gowin_pll_gametank
 target_device=gw2ar18c-000
 type=clock_rpll
 version=1.0

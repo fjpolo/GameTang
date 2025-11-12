@@ -402,9 +402,9 @@ wire irq;
 wire [15:0] audio = audio_in;
 reg [15:0] flags_out = 0;
 
-wire nesprg_oe;
-wire [7:0] neschrdout;
-wire neschr_oe;
+wire gametankprg_oe;
+wire [7:0] gametankchrdout;
+wire gametankchr_oe;
 wire wram_oe;
 wire wram_we;
 wire prgram_we;
@@ -420,9 +420,9 @@ always @(posedge clk) begin
 	m2[0] <= ce;
 end
 
-MAPVRC6 vrc6(m2[7], m2_n, clk, enable, prg_write, nesprg_oe, 0,
+MAPVRC6 vrc6(m2[7], m2_n, clk, enable, prg_write, gametankprg_oe, 0,
 	1, prg_ain, chr_ain, prg_din, 8'b0, prg_dout,
-	neschrdout, neschr_oe, chr_allow, chrram_oe, wram_oe, wram_we, prgram_we,
+	gametankchrdout, gametankchr_oe, chr_allow, chrram_oe, wram_oe, wram_we, prgram_we,
 	prgram_oe, chr_aout[18:10], ramprgaout, irq, vram_ce,// exp6,
 	0, 7'b1111111, 6'b111111, flags[14], flags[16], flags[15],
 	ce, flags[1]);
@@ -525,8 +525,8 @@ always@(posedge clk) begin
 			5'b11010:chrbank6<=prg_din;      //D000
 			5'b11011:chrbank7<=prg_din;      //D008/10
 			5'b11100:{ramw,mirror}<={prg_din[7],prg_din[1:0]};   //E000
-			//5'b11101:irqlatch<=nesprgdin;      //E008/10
-			//5'b11110:{irqM,irqA}<={nesprgdin[2],nesprgdin[0]}; //F000
+			//5'b11101:irqlatch<=gametankprgdin;      //E008/10
+			//5'b11110:{irqM,irqA}<={gametankprgdin[2],gametankprgdin[0]}; //F000
 		endcase
 	end
 end
@@ -570,18 +570,18 @@ module MAPVRC6(     //signal descriptions in powerpak.v
 	input clk20,
 
 	input enable,
-	input nesprg_we,
-	output nesprg_oe,
-	input neschr_rd,
-	input neschr_wr,
+	input gametankprg_we,
+	output gametankprg_oe,
+	input gametankchr_rd,
+	input gametankchr_wr,
 	input [15:0] prgain,
 	input [13:0] chrain,
-	input [7:0] nesprgdin,
+	input [7:0] gametankprgdin,
 	input [7:0] ramprgdin,
-	output [7:0] nesprgdout,
+	output [7:0] gametankprgdout,
 
-	output [7:0] neschrdout,
-	output neschr_oe,
+	output [7:0] gametankchrdout,
+	output gametankchr_oe,
 
 	output chrram_we,
 	output chrram_oe,
@@ -625,21 +625,21 @@ module MAPVRC6(     //signal descriptions in powerpak.v
 		if (~enable)
 			{prgbank8, prgbankC, mirror, chrbank0, chrbank1, chrbank2,
 				chrbank3, chrbank4, chrbank5, chrbank6, chrbank7} <= 0;
-		else if(ce && nesprg_we) begin
+		else if(ce && gametankprg_we) begin
 			casex({ain[15:12],ain[1:0]})
-				6'b1000xx:prgbank8<=nesprgdin[4:0]; //800x
-				6'b1100xx:prgbankC<=nesprgdin[5:0]; //C00x
-				6'b101111:mirror<=nesprgdin[3:2];   //B003
-				6'b110100:chrbank0<=nesprgdin;      //D000
-				6'b110101:chrbank1<=nesprgdin;      //D001
-				6'b110110:chrbank2<=nesprgdin;      //D002
-				6'b110111:chrbank3<=nesprgdin;      //D003
-				6'b111000:chrbank4<=nesprgdin;      //E000
-				6'b111001:chrbank5<=nesprgdin;      //E001
-				6'b111010:chrbank6<=nesprgdin;      //E002
-				6'b111011:chrbank7<=nesprgdin;      //E003
-				//6'b111100:irqlatch<=nesprgdin;      //F000
-				//6'b111101:{irqM,irqA}<={nesprgdin[2],nesprgdin[0]}; //F001
+				6'b1000xx:prgbank8<=gametankprgdin[4:0]; //800x
+				6'b1100xx:prgbankC<=gametankprgdin[5:0]; //C00x
+				6'b101111:mirror<=gametankprgdin[3:2];   //B003
+				6'b110100:chrbank0<=gametankprgdin;      //D000
+				6'b110101:chrbank1<=gametankprgdin;      //D001
+				6'b110110:chrbank2<=gametankprgdin;      //D002
+				6'b110111:chrbank3<=gametankprgdin;      //D003
+				6'b111000:chrbank4<=gametankprgdin;      //E000
+				6'b111001:chrbank5<=gametankprgdin;      //E001
+				6'b111010:chrbank6<=gametankprgdin;      //E002
+				6'b111011:chrbank7<=gametankprgdin;      //E003
+				//6'b111100:irqlatch<=gametankprgdin;      //F000
+				//6'b111101:{irqM,irqA}<={gametankprgdin[2],gametankprgdin[0]}; //F001
 			endcase
 		end
 	end
@@ -670,7 +670,7 @@ module MAPVRC6(     //signal descriptions in powerpak.v
 		end
 	end
 
-	vrcIRQ vrc6irq(clk20,enable,nesprg_we,{irql,irql},irqc,irqa,nesprgdin,irq,ce);
+	vrcIRQ vrc6irq(clk20,enable,gametankprg_we,{irql,irql},irqc,irqa,gametankprgdin,irq,ce);
 
 //mirroring
 	assign ramchraout[10]=!chrain[13] ? chrbank[10] : ((mirror==0 & chrain[10]) | (mirror==1 & chrain[11]) | (mirror==3));
@@ -682,32 +682,32 @@ module MAPVRC6(     //signal descriptions in powerpak.v
 	assign ramchraout[18:12]={1'b0,chrbank[17:12]} & cfg_chrmask;
 
 //ram control
-	assign chrram_we=neschr_wr & !chrain[13] & cfg_chrram;
-	assign chrram_oe=neschr_rd & !chrain[13];
+	assign chrram_we=gametankchr_wr & !chrain[13] & cfg_chrram;
+	assign chrram_oe=gametankchr_rd & !chrain[13];
 
-	assign neschr_oe=0;
-	assign neschrdout=0;
+	assign gametankchr_oe=0;
+	assign gametankchrdout=0;
 
-	assign wram_oe=m2_n & ~nesprg_we & prgain[15:13]=='b011;
-	assign wram_we=m2_n &  nesprg_we & prgain[15:13]=='b011;
+	assign wram_oe=m2_n & ~gametankprg_we & prgain[15:13]=='b011;
+	assign wram_we=m2_n &  gametankprg_we & prgain[15:13]=='b011;
 
 	assign prgram_we=0;
-	assign prgram_oe=~cfg_boot & m2_n & ~nesprg_we & prgain[15];
+	assign prgram_oe=~cfg_boot & m2_n & ~gametankprg_we & prgain[15];
 
 	wire config_rd = 0;
-	assign nesprgdout=8'b0;
-	assign nesprg_oe=wram_oe | prgram_oe | config_rd;
+	assign gametankprgdout=8'b0;
+	assign gametankprg_oe=wram_oe | prgram_oe | config_rd;
 
 endmodule
 
 module vrcIRQ(
 	input clk20,
 	input enable,
-	input nesprg_we,
+	input gametankprg_we,
 	input [1:0] irqlatch_add,
 	input irqctrl_add,
 	input irqack_add,
-	input [7:0] nesprgdin,
+	input [7:0] gametankprgdin,
 	output irq,
 	input ce
 );
@@ -717,15 +717,15 @@ reg irqM,irqE,irqA;
 always@(posedge clk20) begin
 	if (~enable)
 		{irqM, irqA, irqlatch} <= 0;
-	else if(ce && nesprg_we) begin
+	else if(ce && gametankprg_we) begin
 		if (irqlatch_add == 2'b11)
-			irqlatch<=nesprgdin;                      //F000
+			irqlatch<=gametankprgdin;                      //F000
 		else if (irqlatch_add == 2'b10)
-			irqlatch[7:4]<=nesprgdin[3:0];            //F000h
+			irqlatch[7:4]<=gametankprgdin[3:0];            //F000h
 		else if (irqlatch_add == 2'b01)
-			irqlatch[3:0]<=nesprgdin[3:0];            //F000l
+			irqlatch[3:0]<=gametankprgdin[3:0];            //F000l
 		else if (irqctrl_add)
-			{irqM,irqA}<={nesprgdin[2],nesprgdin[0]}; //F001
+			{irqM,irqA}<={gametankprgdin[2],gametankprgdin[0]}; //F001
 	end
 end
 
@@ -735,7 +735,7 @@ reg timeout;
 reg [6:0] scalar;
 reg [1:0] line;
 wire irqclk=irqM|(scalar==0);
-wire setE=nesprg_we & irqctrl_add & nesprgdin[1];
+wire setE=gametankprg_we & irqctrl_add & gametankprgdin[1];
 always@(posedge clk20) begin
 	if (~enable)
 		{irqcnt, scalar, line} <= 0;
@@ -764,14 +764,14 @@ always@(posedge clk20) begin
 		irqE<=0;
 		timeout<=0;
 	end else if (ce) begin
-		if(nesprg_we & (irqctrl_add | irqack_add)) //write Fxx1 or Fxx2
+		if(gametankprg_we & (irqctrl_add | irqack_add)) //write Fxx1 or Fxx2
 			timeout<=0;
 		else if(irqclk & irqcnt==255)
 			timeout<=1;
 
-		if(nesprg_we & irqctrl_add) //write Fxx1
-			irqE<=nesprgdin[1];
-		else if(nesprg_we & irqack_add) //write Fxx2
+		if(gametankprg_we & irqctrl_add) //write Fxx1
+			irqE<=gametankprgdin[1];
+		else if(gametankprg_we & irqack_add) //write Fxx2
 			irqE<=irqA;
 	end
 end
@@ -822,7 +822,7 @@ eseopll ym2143vrc7 (clk,~enable, ce_ym2143,wr_audio,ce_ym2143,ack,wr_audio,{15'b
 // VRC7 sound is very low, and the top bit is seldom (if ever) used. It's output as signed with
 // an actual used range of 6 * +/-512 = +/-3072.  What we do is convert to unsigned (+2048),
 // then clip to 4095. This clips the top 50% of the values, which are unlikely to be needed. This volume
-// is low compared to NES audio, so we mix accordingly, again clipping if needed. The result
+// is low compared to GAMETANK audio, so we mix accordingly, again clipping if needed. The result
 // is audio mixed more or less correctly and at a similar level to the audio from regular games.
 
 wire [13:0] audio_exp = ym2143audio + 14'h800;

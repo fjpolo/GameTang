@@ -22,13 +22,13 @@ module gametang_top (
     // SDRAM - Tang SDRAM pmod 1.2 for primer 25k, on-chip 32-bit 8MB SDRAM for nano 20k
     output O_sdram_clk,
     output O_sdram_cke,
-    output O_sdram_cs_n,            // chip select
-    output O_sdram_cas_n,           // columns address select
-    output O_sdram_ras_n,           // row address select
-    output O_sdram_wen_n,           // write enable
-    inout [SDRAM_DATA_WIDTH-1:0] IO_sdram_dq,      // bidirectional data bus
-    output [SDRAM_ROW_WIDTH-1:0] O_sdram_addr,     // multiplexed address bus
-    output [1:0] O_sdram_ba,        // two banks
+    output O_sdram_cs_n,                            // chip select
+    output O_sdram_cas_n,                           // columns address select
+    output O_sdram_ras_n,                           // row address select
+    output O_sdram_wen_n,                           // write enable
+    inout [SDRAM_DATA_WIDTH-1:0] IO_sdram_dq,       // bidirectional data bus
+    output [SDRAM_ROW_WIDTH-1:0] O_sdram_addr,      // multiplexed address bus
+    output [1:0] O_sdram_ba,                        // two banks
     output [SDRAM_DATA_WIDTH/8-1:0] O_sdram_dqm,  
 `ifdef LED2
     // LEDs
@@ -228,37 +228,44 @@ CLKDIV #(.DIV_MODE(5)) div5 (
 wire [31:0] status;
 
 
-// // Main GAMETANK machine
-//GAMETANK gametank(
-//    .clk(clk), .reset_gametank(reset_gametank), .cold_reset(1'b0),
-//    .sys_type(system_type), .gametank_div(gametank_ce),
-//    .mapper_flags(mapper_flags),
-//    .sample(sample), .color(color),
-//    .joypad_out(joypad_out), .joypad_clock(joypad_clock), 
-//    .joypad1_data(joypad1_data), .joypad2_data(joypad2_data),
 
-//    .fds_busy(), .fds_eject(), .diskside_req(), .diskside(),        // disk system
-//    .audio_channels(5'b11111),  // enable all channels
-//    
-//    .cpumem_addr(memory_addr_cpu),
-//    .cpumem_read(memory_read_cpu),
-//    .cpumem_din(memory_din_cpu),
-//    .cpumem_write(memory_write_cpu),
-//    .cpumem_dout(memory_dout_cpu),
-//    .ppumem_addr(memory_addr_ppu),
-//    .ppumem_read(memory_read_ppu),
-//    .ppumem_write(memory_write_ppu),
-//    .ppumem_din(memory_din_ppu),
-//    .ppumem_dout(memory_dout_ppu),
 
-//    .bram_addr(), .bram_din(), .bram_dout(), .bram_write(), .bram_override(),
 
-//    .cycle(cycle), .scanline(scanline),
-//    .int_audio(int_audio),    // VRC6
-//    .ext_audio(ext_audio),
 
-//    .apu_ce(), .gg(), .gg_code(), .gg_avail(), .gg_reset(), .emphasis(), .save_written()
-//);
+
+
+
+// Main GAMETANK machine
+/* synthesis syn_keep=1 */ GAMETANK gametank(
+   .clk(clk), .reset_gametank(reset_gametank), .cold_reset(1'b0),
+   .sys_type(system_type), .gametank_div(gametank_ce),
+   .mapper_flags(mapper_flags),
+   .sample(sample), .color(color),
+   .joypad_out(joypad_out), .joypad_clock(joypad_clock), 
+   .joypad1_data(joypad1_data), .joypad2_data(joypad2_data),
+
+   .fds_busy(), .fds_eject(), .diskside_req(), .diskside(),        // disk system
+   .audio_channels(5'b11111),  // enable all channels
+   
+   .cpumem_addr(memory_addr_cpu),
+   .cpumem_read(memory_read_cpu),
+   .cpumem_din(memory_din_cpu),
+   .cpumem_write(memory_write_cpu),
+   .cpumem_dout(memory_dout_cpu),
+   .ppumem_addr(memory_addr_ppu),
+   .ppumem_read(memory_read_ppu),
+   .ppumem_write(memory_write_ppu),
+   .ppumem_din(memory_din_ppu),
+   .ppumem_dout(memory_dout_ppu),
+
+   .bram_addr(), .bram_din(), .bram_dout(), .bram_write(), .bram_override(),
+
+   .cycle(cycle), .scanline(scanline),
+   .int_audio(int_audio),    // VRC6
+   .ext_audio(ext_audio),
+
+   .apu_ce(), .gg(), .gg_code(), .gg_avail(), .gg_reset(), .emphasis(), .save_written()
+) /* synthesis syn_keep=1 */;
 
 // From sdram_gametank.v or sdram_sim.v
 sdram_gametank sdram (
@@ -288,6 +295,14 @@ sdram_gametank sdram (
 `endif
 );
 
+
+
+
+
+
+
+
+
 ///////////////////////////
 // Peripherals
 ///////////////////////////
@@ -311,18 +326,6 @@ gametank2hdmi u_hdmi (     // purple: RGB=440064 (010001000_00000000_01100100), 
 );
 
 
-// // Connect to BL616 companion MCU for sys module for menu, rom loading...
-// iosys_bl616 #(.COLOR_LOGO(15'b01100_00000_01000), .FREQ(21_492_000), .CORE_ID(1) )     // purple gametang logo
-//     sys_inst (
-//     .clk(clk), .hclk(hclk), .resetn(sys_resetn),
-
-//     .overlay(overlay), .overlay_x(overlay_x), .overlay_y(overlay_y), .overlay_color(overlay_color),
-//     .joy1(joy1_btns | joy_usb1), .joy2(joy2_btns | joy_usb2),
-//     .hid1(hid1), .hid2(hid2),
-//     .uart_tx(UART_TXD), .uart_rx(UART_RXD),
-
-//     .rom_loading(loading), .rom_do(loader_do), .rom_do_valid(loader_do_valid)
-// );
 
 // Controller input
 `ifdef CONTROLLER_SNES

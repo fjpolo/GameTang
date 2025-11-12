@@ -114,7 +114,7 @@ always @(posedge clk) begin
                     // check if buttons_buf[15:12] are 0; if not, this is an GAMETANK controller
                     if (buttons_buf[15:12] != 4'b0000) begin
                         // GAMETANK controller
-                        buttons <= {0, 0, 0, 0, buttons_buf[7:0]};
+                        buttons <= {4'h0, buttons_buf[7:0]};
                     end else begin
                         // SNES controller
                         buttons <= buttons_buf[11:0];

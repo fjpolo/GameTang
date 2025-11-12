@@ -188,7 +188,6 @@ wire GAMETANK_gamepad_data_available2;
 ///////////////////////////
 
 wire clk;       // 21.477Mhz main clock
-wire fclk;      // 3x clk SDRAM clock
 wire hclk;      // 720p pixel clock: 74.25 Mhz
 wire hclk5;     // 5x pixel clock: 371.25 Mhz
 wire clk27;     // 27Mhz to generate hclk/hclk5
@@ -237,35 +236,90 @@ wire [31:0] status;
 
 // Main GAMETANK machine
 /* synthesis syn_keep=1 */ GAMETANK gametank(
-   .clk(clk), .reset_gametank(reset_gametank), .cold_reset(1'b0),
-   .sys_type(system_type), .gametank_div(gametank_ce),
-   .mapper_flags(mapper_flags),
-   .sample(sample), .color(color),
-   .joypad_out(joypad_out), .joypad_clock(joypad_clock), 
-   .joypad1_data(joypad1_data), .joypad2_data(joypad2_data),
+    // Clocks
+    .i_clk_acp(clk),            // Primary PPU/ACP clock (~14.32 MHz, using 21.477Mhz 'clk')
+    .i_clk_cpu(clk),            // **TODO: This should be the 3.58 MHz CPU clock. Using 'clk' temporarily.**
 
-   .fds_busy(), .fds_eject(), .diskside_req(), .diskside(),        // disk system
-   .audio_channels(5'b11111),  // enable all channels
-   
-   .cpumem_addr(memory_addr_cpu),
-   .cpumem_read(memory_read_cpu),
-   .cpumem_din(memory_din_cpu),
-   .cpumem_write(memory_write_cpu),
-   .cpumem_dout(memory_dout_cpu),
-   .ppumem_addr(memory_addr_ppu),
-   .ppumem_read(memory_read_ppu),
-   .ppumem_write(memory_write_ppu),
-   .ppumem_din(memory_din_ppu),
-   .ppumem_dout(memory_dout_ppu),
+    // Reset/System
+    .i_reset_gametank(reset_gametank),  // System Reset (Active High)
+    .i_cold_reset(1'b0),
+    .i_sys_type(system_type),
+    .o_gametank_div(gametank_ce),       // Clock cycle dividers [2:0] (wire is [1:0] and will be truncated)
 
-   .bram_addr(), .bram_din(), .bram_dout(), .bram_write(), .bram_override(),
+    // Mapper/Cartridge
+    .i_mapper_flags(mapper_flags),
+    
+    // Video/Audio Outputs
+    .o_sample(sample),
+    .o_color(color),
+    
+    // Joypads/I/O
+    .o_joypad_out(joypad_out),
+    .o_joypad_clock(joypad_clock), 
+    .i_joypad1_data(joypad1_data), 
+    .i_joypad2_data(joypad2_data), 
 
-   .cycle(cycle), .scanline(scanline),
-   .int_audio(int_audio),    // VRC6
-   .ext_audio(ext_audio),
+    // Disk System (Tied off)
+    .i_fds_busy(1'b0),
+    .i_fds_eject(1'b0),
+    .o_diskside_req(),
+    .i_diskside(2'b00),
+    .i_audio_channels(5'b11111), 
+    
+    // CPU Memory Interface (SDRAM)
+    .o_cpumem_addr(memory_addr_cpu),
+    .o_cpumem_read(memory_read_cpu),
+    .o_cpumem_write(memory_write_cpu),
+    .o_cpumem_dout(memory_dout_cpu),
+    .i_cpumem_din(memory_din_cpu),
+    
+    // PPU Memory Interface (SDRAM)
+    .o_ppumem_addr(memory_addr_ppu),
+    .o_ppumem_read(memory_read_ppu),
+    .o_ppumem_write(memory_write_ppu),
+    .o_ppumem_dout(memory_dout_ppu),
+    .i_ppumem_din(memory_din_ppu),
 
-   .apu_ce(), .gg(), .gg_code(), .gg_avail(), .gg_reset(), .emphasis(), .save_written()
+    // BRAM Override (Tied off)
+    .o_bram_addr(),
+    .i_bram_din(8'h00),
+    .o_bram_dout(),
+    .o_bram_write(),
+    .o_bram_override(),
+
+    // Debug/Timing
+    .o_cycle(cycle),
+    .o_scanline(scanline),
+    
+    // APU/IRQ
+    .i_int_audio(int_audio),
+    .i_ext_audio(ext_audio),
+    .o_apu_ce(),
+    
+    // Game Genie (Tied off)
+    .i_gg(1'b0),
+    .i_gg_code(129'b0),
+    .o_gg_avail(),
+    .i_gg_reset(1'b0),
+    .o_emphasis(),
+    .o_save_written()
 ) /* synthesis syn_keep=1 */;
+
+
+
+
+
+
+
+
+
+
+
+
+
+///////////////////////////
+// Peripherals
+///////////////////////////
 
 // From sdram_gametank.v or sdram_sim.v
 sdram_gametank sdram (
@@ -295,18 +349,6 @@ sdram_gametank sdram (
 `endif
 );
 
-
-
-
-
-
-
-
-
-///////////////////////////
-// Peripherals
-///////////////////////////
-
 // For physical board, there's HDMI, iosys, joypads, and USB
 wire overlay;                   // iosys controls overlay
 wire [7:0] overlay_x;
@@ -324,8 +366,6 @@ gametank2hdmi u_hdmi (     // purple: RGB=440064 (010001000_00000000_01100100), 
     .tmds_clk_n(tmds_clk_n), .tmds_clk_p(tmds_clk_p),
     .tmds_d_n(tmds_d_n), .tmds_d_p(tmds_d_p)
 );
-
-
 
 // Controller input
 `ifdef CONTROLLER_SNES

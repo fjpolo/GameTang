@@ -3,3 +3,5 @@ impl
 gametank.gprj.user
 
 *.vcd
+*.user
+*.gprj.user

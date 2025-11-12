@@ -12,3 +12,7 @@
 [submodule "GameTank-Csdk"]
 	path = GameTank-Csdk
 	url = https://github.com/clydeshaffer/gametank_sdk
+[submodule "OSTang"]
+	path = OSTang
+	url = https://github.com/fjpolo/OSTang
+	branch = master

@@ -167,17 +167,17 @@ BusControlUnit U_BCU (
 // ** CPU's fast internal working RAM **
 // ************************************************************
 
-//GPPRAM_2KB U_GPPRAM (
-//    .i_clk_cpu            (i_clk_cpu),
-//    .i_reset              (reset),
-//    
-//    .i_ce                 (gppram_ce),
-//    .i_rnw                (cpu_rnw),
-//    .i_addr               (cpu_addr[10:0]), // 11 bits for 2KB
-//    .i_data_in            (cpu_dout),
-//    
-//    .o_data_out           (gppram_data_out)
-//);
+GPPRAM_2KB U_GPPRAM (
+   .i_clk_cpu            (i_clk_cpu),
+   .i_reset              (reset),
+   
+   .i_ce                 (gppram_ce),
+   .i_rnw                (cpu_rnw),
+   .i_addr               (cpu_addr[10:0]), // 11 bits for 2KB
+   .i_data_in            (cpu_dout),
+   
+   .o_data_out           (gppram_data_out)
+);
 
 
 // ************************************************************

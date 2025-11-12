@@ -2,3 +2,13 @@
 	path = M65C02A
 	url = https://github.com/mstram/M65C02A
 	branch = master
+[submodule "GameTank-Hw"]
+	path = GameTank-Hw
+	url = https://github.com/clydeshaffer/gametank
+	branch = main
+[submodule "GameTank-Emu"]
+	path = GameTank-Emu
+	url = https://github.com/clydeshaffer/gametankemulator
+[submodule "GameTank-Csdk"]
+	path = GameTank-Csdk
+	url = https://github.com/clydeshaffer/gametank_sdk

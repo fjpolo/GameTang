@@ -166,7 +166,9 @@ BusControlUnit U_BCU (
 // ** 4. 2KB GPPRAM Module Instantiation ($0000-$07FF) **
 // ** CPU's fast internal working RAM **
 // ************************************************************
-
+// Address Range(Hex)	Size	Component	Purpose
+// $0000 - $07FF	    2 KB	GPPRAM	    The main internal working RAM. This is where the CPU stores variables, stack data, and temporary game state.
+// $0800 - $1FFF	    6 KB	GPPRAM      Mirror	This area mirrors the original 2KB of RAM, meaning any write to this region is effectively a write to $0000-$07FF, and a read returns the data from the mirrored location.
 GPPRAM_2KB U_GPPRAM (
    .i_clk_cpu            (i_clk_cpu),
    .i_reset              (reset),

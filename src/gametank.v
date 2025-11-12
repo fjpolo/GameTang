@@ -84,6 +84,9 @@ wire [7:0] io_data_out;
 wire [7:0] sdram_data_out;
 wire [7:0] cart_data_out;
 
+// New wire to capture the data read specifically from the BSROM mapper
+wire [7:0] bsrom_data_out; 
+
 // --- PPU/GPU MMIO Controller Signals ---
 wire i_vblank_flag = 1'b0; // Placeholder for VBlank status from PPU core
 wire [7:0] ppu_ctrl_reg;
@@ -167,51 +170,49 @@ BusControlUnit U_BCU (
 // ** CPU's fast internal working RAM **
 // ************************************************************
 // Address Range(Hex)	Size	Component	Purpose
-// $0000 - $07FF	    2 KB	GPPRAM	    The main internal working RAM. This is where the CPU stores variables, stack data, and temporary game state.
-// $0800 - $1FFF	    6 KB	GPPRAM      Mirror	This area mirrors the original 2KB of RAM, meaning any write to this region is effectively a write to $0000-$07FF, and a read returns the data from the mirrored location.
+// $0000 - $07FF	    2 KB	GPPRAM	    The main internal working RAM.
+// $0800 - $1FFF	    6 KB	GPPRAM      Mirror
 GPPRAM_2KB U_GPPRAM (
-   .i_clk_cpu            (i_clk_cpu),
-   .i_reset              (reset),
-   
-   .i_ce                 (gppram_ce),
-   .i_rnw                (cpu_rnw),
-   .i_addr               (cpu_addr[10:0]), // 11 bits for 2KB
-   .i_data_in            (cpu_dout),
-   
-   .o_data_out           (gppram_data_out)
+    .i_clk_cpu             (i_clk_cpu),
+    .i_reset               (reset),
+    
+    .i_ce                  (gppram_ce),
+    .i_rnw                 (cpu_rnw),
+    .i_addr                (cpu_addr[10:0]), // 11 bits for 2KB
+    .i_data_in             (cpu_dout),
+    
+    .o_data_out            (gppram_data_out)
 );
 
 
 // ************************************************************
-// ** 5. PPU MMIO Controller Instantiation ($4000-$4015) **
-// ** Manages Control, Mask, VRAM Address Latches, and DMA trigger **
+// ** 5. BSROM Cartridge Mapper Instantiation ($8000-$FFFF) **
 // ************************************************************
+// Note: This must be instantiated before the tie-offs, as it drives cart_data_out.
+// Start Address	End Address	Size	Component	    Purpose
+// $8000	        $FFFF	    32 KB	BSROM_Mapper	Cartridge Program ROM (PRG-ROM)
+BSROM_Mapper U_BSROM_Mapper (
+    .i_clk_cpu          (i_clk_cpu),
+    .i_ce               (cart_ce),         // Enabled when CPU addresses $8000-$FFFF
+    .i_rnw              (cpu_rnw),
+    .i_addr             (cpu_addr),
+    .o_data_out         (bsrom_data_out)
+);
 
-//PPU_MMIO_Controller U_PPU_MMIO (
-//    .i_clk_cpu            (i_clk_cpu),
-//    .i_reset              (reset),
-//    
-//    .i_ce                 (ppu_ce),
-//    .i_rnw                (cpu_rnw),
-//    .i_addr_lsb           (cpu_addr[3:0]), // Lower 4 bits select the register
-//    .i_data_in            (cpu_dout),
-//    
-//    .i_vblank_flag        (i_vblank_flag), // Placeholder status input from PPU core
-//    
-//    .o_data_out           (ppu_data_out), // Data read back to CPU
-//    
-// //      PPU Control Outputs
-//    .o_ctrl_reg           (ppu_ctrl_reg),     // $4000
-//    .o_mask_reg           (ppu_mask_reg),     // $4001
-//    .o_ppu_addr           (ppu_vram_addr),    // Latch for $4006/$4007
-//    .o_oam_dma_start      (ppu_oam_dma_start),// $4014 trigger
-//    .o_oam_addr_reg       (ppu_oam_addr_reg)  // $4003
-//);
+// Connect the BSROM output to the main cartridge data bus wire
+assign cart_data_out = bsrom_data_out;
 
 
 // ************************************************************
-// ** 6. APU (ACP) / Audio & Mapper Peripherals **
-// ** Placeholder for future audio and cartridge modules **
+// ** 6. PPU MMIO Controller Instantiation ($4000-$4015) **
+// ** Placeholder block for MMIO**
+// ************************************************************
+//PPU_MMIO_Controller U_PPU_MMIO ( ... )
+// Since the module is commented out, its related wires will be tied off in the next section.
+
+
+// ************************************************************
+// ** 7. APU (ACP) / Audio & Global Tie-Offs **
 // ************************************************************
 // APU IRQ is required for CPU module
 assign apu_irq = 1'b0; // Tied off
@@ -223,17 +224,14 @@ wire [7:0] o_audio_dac;
 // Audio_CoProcessor_System U_ACP ( ... );
 assign o_sample = {{8{1'b0}}, o_audio_dac};
 assign o_audio_dac = 8'h00; // Tied off
-
-
-// ************************************************************
-// ** 7. Global Tie-Offs for Missing Modules & Unused Ports **
-// ************************************************************
+assign o_color = 6'h00;     // PPU pixel output
 
 // Data read inputs to the BCU from tied-off components (default to open bus $FF)
 assign acp_data_out = 8'hFF;    // ACP MMIO/RAM
+assign ppu_data_out = 8'hFF;    // PPU MMIO read data 
 assign io_data_out = 8'hFF;     // Joypad/IO MMIO
 assign sdram_data_out = 8'hFF;  // SDRAM/Save RAM
-assign cart_data_out = 8'hFF;   // Cartridge ROM
+// cart_data_out is now driven by BSROM_Mapper (Section 5) - REMOVED redundant assign
 
 // Tie off required outputs for the compiler/simulation
 assign o_cycle = 9'h00; 

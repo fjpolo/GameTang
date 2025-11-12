@@ -5,6 +5,7 @@
     <Version>5</Version>
     <Device name="GW2AR-18C" pn="GW2AR-LV18QN88C8/I7">gw2ar18c-000</Device>
     <FileList>
+        <File path="src/BSROM_Mapper.v" type="file.verilog" enable="1"/>
         <File path="src/BusControlUnit.v" type="file.verilog" enable="1"/>
         <File path="src/GPPRAM_2KB.v" type="file.verilog" enable="1"/>
         <File path="src/autofire.v" type="file.verilog" enable="1"/>
@@ -44,6 +45,7 @@
         <File path="src/boards/nano20k.cst" type="file.cst" enable="1"/>
         <File path="src/boards/nano20k.sdc" type="file.sdc" enable="1"/>
         <File path="src/gametank.gao" type="file.gao" enable="0"/>
+        <File path="GameTank-Emu/roms/hello.hex" type="file.other" enable="1"/>
         <File path="src/pllr/gowin_pll_gametank.ipc" type="file.other" enable="1"/>
         <File path="src/pllr/gowin_pll_gametank.mod" type="file.other" enable="1"/>
     </FileList>

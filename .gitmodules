@@ -1,0 +1,4 @@
+[submodule "M65C02A"]
+	path = M65C02A
+	url = https://github.com/mstram/M65C02A
+	branch = master

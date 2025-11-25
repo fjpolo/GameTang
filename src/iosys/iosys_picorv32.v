@@ -144,33 +144,33 @@ always @(posedge clk) begin
 end
 
 // picorv32 softcore
-wire mem_valid /* synthesis syn_keep=1 */;
+wire mem_valid ;
 wire mem_ready;
-wire [31:0] mem_addr /* synthesis syn_keep=1 */, mem_wdata /* synthesis syn_keep=1 */;
-wire [3:0] mem_wstrb /* synthesis syn_keep=1 */;
-wire [31:0] mem_rdata /* synthesis syn_keep=1 */;
+wire [31:0] mem_addr /* synthesis syn_keep=1*/, mem_wdata ;
+wire [3:0] mem_wstrb ;
+wire [31:0] mem_rdata ;
 
-reg ram_ready /* synthesis syn_keep=1 */;
+reg ram_ready ;
 reg [31:0] ram_rdata;
 
 wire        ram_sel = mem_valid && mem_addr[31:23] == 0;
 
-wire        textdisp_reg_char_sel /* synthesis syn_keep=1 */= mem_valid && (mem_addr == 32'h 0200_0000);
+wire        textdisp_reg_char_sel /* synthesis syn_keep=1*/= mem_valid && (mem_addr == 32'h 0200_0000);
 
 wire        simpleuart_reg_div_sel = mem_valid && (mem_addr == 32'h 0200_0010);
 wire [31:0] simpleuart_reg_div_do;
 
-wire        simpleuart_reg_dat_sel /* synthesis syn_keep=1 */ = mem_valid && (mem_addr == 32'h 0200_0014);
+wire        simpleuart_reg_dat_sel /* synthesis syn_keep=1*/ = mem_valid && (mem_addr == 32'h 0200_0014);
 wire [31:0] simpleuart_reg_dat_do;
 wire        simpleuart_reg_dat_wait;
 
-wire        simplespimaster_reg_byte_sel /* synthesis syn_keep=1 */ = mem_valid && (mem_addr == 32'h0200_0020);
-wire        simplespimaster_reg_word_sel /* synthesis syn_keep=1 */ = mem_valid && (mem_addr == 32'h0200_0024);
+wire        simplespimaster_reg_byte_sel /* synthesis syn_keep=1*/ = mem_valid && (mem_addr == 32'h0200_0020);
+wire        simplespimaster_reg_word_sel /* synthesis syn_keep=1*/ = mem_valid && (mem_addr == 32'h0200_0024);
 wire [31:0] simplespimaster_reg_do;
-wire        simplespimaster_reg_wait /* synthesis syn_keep=1 */;
+wire        simplespimaster_reg_wait ;
 
-wire        romload_reg_ctrl_sel /* synthesis syn_keep=1 */ = mem_valid && (mem_addr == 32'h 0200_0030);       // write 1 to start loading, 0 to finish loading
-wire        romload_reg_data_sel /* synthesis syn_keep=1 */ = mem_valid && (mem_addr == 32'h 0200_0034);       // write once to load 4 bytes
+wire        romload_reg_ctrl_sel /* synthesis syn_keep=1*/ = mem_valid && (mem_addr == 32'h 0200_0030);       // write 1 to start loading, 0 to finish loading
+wire        romload_reg_data_sel /* synthesis syn_keep=1*/ = mem_valid && (mem_addr == 32'h 0200_0034);       // write once to load 4 bytes
 
 wire        joystick_reg_sel = mem_valid && (mem_addr == 32'h 0200_0040);
 

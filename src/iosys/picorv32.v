@@ -1365,12 +1365,12 @@ module picorv32 #(
 		end
 	end
 `else
-	wire[31:0] cpuregs_rdata1 /* synthesis syn_keep=1 */;
-	wire[31:0] cpuregs_rdata2 /* synthesis syn_keep=1 */;
+	wire[31:0] cpuregs_rdata1 ;
+	wire[31:0] cpuregs_rdata2 ;
 
 	wire [5:0] cpuregs_waddr = latched_rd;
-	wire [5:0] cpuregs_raddr1 /* synthesis syn_keep=1 */ = ENABLE_REGS_DUALPORT ? decoded_rs1 : decoded_rs;
-	wire [5:0] cpuregs_raddr2 /* synthesis syn_keep=1 */= ENABLE_REGS_DUALPORT ? decoded_rs2 : 0;
+	wire [5:0] cpuregs_raddr1 /* synthesis syn_keep=1*/ = ENABLE_REGS_DUALPORT ? decoded_rs1 : decoded_rs;
+	wire [5:0] cpuregs_raddr2 /* synthesis syn_keep=1*/= ENABLE_REGS_DUALPORT ? decoded_rs2 : 0;
 
 	`PICORV32_REGS cpuregs (
 		.clk(clk),

@@ -1,0 +1,131 @@
+<?xml version="1" encoding="UTF-8"?>
+<GAO_CONFIG>
+    <Version>3.0</Version>
+    <Mode>Lite</Mode>
+    <AoCore_Lite index="0" sample_clock="clk" trig_type="0" capture_amount="128" implemention="0" input_register_enabled="0" capture_init_data_enabled="0" module_name="gametang_top">
+        <SignalList>
+            <Signal capture_enable="true">clk_stb</Signal>
+            <Signal capture_enable="true">joy1_data</Signal>
+            <Signal capture_enable="true">joy1_btns[5]</Signal>
+            <Signal capture_enable="true">joy1_btns[2]</Signal>
+            <Bus capture_enable="true" name="gametank/cpu/PC[15:0]">
+                <Signal>gametank/cpu/PC[15]</Signal>
+                <Signal>gametank/cpu/PC[14]</Signal>
+                <Signal>gametank/cpu/PC[13]</Signal>
+                <Signal>gametank/cpu/PC[12]</Signal>
+                <Signal>gametank/cpu/PC[11]</Signal>
+                <Signal>gametank/cpu/PC[10]</Signal>
+                <Signal>gametank/cpu/PC[9]</Signal>
+                <Signal>gametank/cpu/PC[8]</Signal>
+                <Signal>gametank/cpu/PC[7]</Signal>
+                <Signal>gametank/cpu/PC[6]</Signal>
+                <Signal>gametank/cpu/PC[5]</Signal>
+                <Signal>gametank/cpu/PC[4]</Signal>
+                <Signal>gametank/cpu/PC[3]</Signal>
+                <Signal>gametank/cpu/PC[2]</Signal>
+                <Signal>gametank/cpu/PC[1]</Signal>
+                <Signal>gametank/cpu/PC[0]</Signal>
+            </Bus>
+            <Bus capture_enable="true" name="gametank/cpu/IR[7:0]">
+                <Signal>gametank/cpu/IR[7]</Signal>
+                <Signal>gametank/cpu/IR[6]</Signal>
+                <Signal>gametank/cpu/IR[5]</Signal>
+                <Signal>gametank/cpu/IR[4]</Signal>
+                <Signal>gametank/cpu/IR[3]</Signal>
+                <Signal>gametank/cpu/IR[2]</Signal>
+                <Signal>gametank/cpu/IR[1]</Signal>
+                <Signal>gametank/cpu/IR[0]</Signal>
+            </Bus>
+            <Bus capture_enable="true" name="gametank/cpu/MCycle[2:0]">
+                <Signal>gametank/cpu/MCycle[2]</Signal>
+                <Signal>gametank/cpu/MCycle[1]</Signal>
+                <Signal>gametank/cpu/MCycle[0]</Signal>
+            </Bus>
+            <Bus capture_enable="true" name="gametank/cpu/LCycle_Z[2:0]">
+                <Signal>gametank/cpu/LCycle_Z[2]</Signal>
+                <Signal>gametank/cpu/LCycle_Z[1]</Signal>
+                <Signal>gametank/cpu/LCycle_Z[0]</Signal>
+            </Bus>
+            <Bus capture_enable="true" name="A[15:0]">
+                <Signal>A[15]</Signal>
+                <Signal>A[14]</Signal>
+                <Signal>A[13]</Signal>
+                <Signal>A[12]</Signal>
+                <Signal>A[11]</Signal>
+                <Signal>A[10]</Signal>
+                <Signal>A[9]</Signal>
+                <Signal>A[8]</Signal>
+                <Signal>A[7]</Signal>
+                <Signal>A[6]</Signal>
+                <Signal>A[5]</Signal>
+                <Signal>A[4]</Signal>
+                <Signal>A[3]</Signal>
+                <Signal>A[2]</Signal>
+                <Signal>A[1]</Signal>
+                <Signal>A[0]</Signal>
+            </Bus>
+            <Bus capture_enable="true" name="gametank/DI[7:0]">
+                <Signal>gametank/DI[7]</Signal>
+                <Signal>gametank/DI[6]</Signal>
+                <Signal>gametank/DI[5]</Signal>
+                <Signal>gametank/DI[4]</Signal>
+                <Signal>gametank/DI[3]</Signal>
+                <Signal>gametank/DI[2]</Signal>
+                <Signal>gametank/DI[1]</Signal>
+                <Signal>gametank/DI[0]</Signal>
+            </Bus>
+            <Bus capture_enable="true" name="DO[7:0]">
+                <Signal>DO[7]</Signal>
+                <Signal>DO[6]</Signal>
+                <Signal>DO[5]</Signal>
+                <Signal>DO[4]</Signal>
+                <Signal>DO[3]</Signal>
+                <Signal>DO[2]</Signal>
+                <Signal>DO[1]</Signal>
+                <Signal>DO[0]</Signal>
+            </Bus>
+            <Bus capture_enable="true" name="gametank/cpu/DL[7:0]">
+                <Signal>gametank/cpu/DL[7]</Signal>
+                <Signal>gametank/cpu/DL[6]</Signal>
+                <Signal>gametank/cpu/DL[5]</Signal>
+                <Signal>gametank/cpu/DL[4]</Signal>
+                <Signal>gametank/cpu/DL[3]</Signal>
+                <Signal>gametank/cpu/DL[2]</Signal>
+                <Signal>gametank/cpu/DL[1]</Signal>
+                <Signal>gametank/cpu/DL[0]</Signal>
+            </Bus>
+            <Bus capture_enable="true" name="gametank/cpu/AD[7:0]">
+                <Signal>gametank/cpu/AD[7]</Signal>
+                <Signal>gametank/cpu/AD[6]</Signal>
+                <Signal>gametank/cpu/AD[5]</Signal>
+                <Signal>gametank/cpu/AD[4]</Signal>
+                <Signal>gametank/cpu/AD[3]</Signal>
+                <Signal>gametank/cpu/AD[2]</Signal>
+                <Signal>gametank/cpu/AD[1]</Signal>
+                <Signal>gametank/cpu/AD[0]</Signal>
+            </Bus>
+            <Bus capture_enable="true" name="gametank/cpu/BAL[8:0]">
+                <Signal>gametank/cpu/BAL[8]</Signal>
+                <Signal>gametank/cpu/BAL[7]</Signal>
+                <Signal>gametank/cpu/BAL[6]</Signal>
+                <Signal>gametank/cpu/BAL[5]</Signal>
+                <Signal>gametank/cpu/BAL[4]</Signal>
+                <Signal>gametank/cpu/BAL[3]</Signal>
+                <Signal>gametank/cpu/BAL[2]</Signal>
+                <Signal>gametank/cpu/BAL[1]</Signal>
+                <Signal>gametank/cpu/BAL[0]</Signal>
+            </Bus>
+            <Bus capture_enable="true" name="gametank/cpu/BAH[7:0]">
+                <Signal>gametank/cpu/BAH[7]</Signal>
+                <Signal>gametank/cpu/BAH[6]</Signal>
+                <Signal>gametank/cpu/BAH[5]</Signal>
+                <Signal>gametank/cpu/BAH[4]</Signal>
+                <Signal>gametank/cpu/BAH[3]</Signal>
+                <Signal>gametank/cpu/BAH[2]</Signal>
+                <Signal>gametank/cpu/BAH[1]</Signal>
+                <Signal>gametank/cpu/BAH[0]</Signal>
+            </Bus>
+        </SignalList>
+    </AoCore_Lite>
+    <GAO_ID>0000100101100011</GAO_ID>
+</GAO_CONFIG>

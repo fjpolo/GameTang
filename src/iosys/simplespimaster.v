@@ -29,7 +29,7 @@ module simplespimaster (
 assign reg_wait = wait_buf & (reg_byte_we | reg_word_we);
 
 reg [7:0] tx_byte;
-wire [7:0] rx_byte /* synthesis syn_keep=1 */;
+wire [7:0] rx_byte ;
 reg spi_start;
 
 reg wait_buf = 1;

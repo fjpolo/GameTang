@@ -19,7 +19,7 @@ module dpram #(
 
 localparam SIZE = 1 << widthad_a;
 
-reg [width_a-1:0] mem [0:SIZE-1];
+reg [width_a-1:0] mem [0:SIZE-1] /*synthesis syn_ramstyle="block_ram"*/;
 
 always @(posedge clock_a) begin
     if (wren_a)

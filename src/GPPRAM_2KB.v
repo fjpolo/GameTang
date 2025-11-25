@@ -15,26 +15,19 @@ module GPPRAM_2KB (
     input wire [7:0] i_data_in, // Data written by CPU
     
     output reg [7:0] o_data_out // Read data output (Synchronous, 1 cycle latency)
-);
+) /*synthesis syn_ramstyle="block_ram"*/;
 
 // 2KB (2048 bytes) of RAM storage
-reg [7:0] ram [2047:0] /*synthesis syn_ramstyle="block_ram"*/;
+reg [7:0] ram [((2*1024)-1):0] /*synthesis syn_ramstyle="block_ram"*/;
 
 // Block RAM logic: Read and Write operations are synchronous to the clock.
-always @(posedge i_clk_cpu) begin
-    if (i_ce) begin
-        if (!i_rnw) begin // Write Operation
-            // Synchronous write
+wire write = (i_ce)&&(!i_rnw);
+always @(posedge i_clk_cpu)
+    if (write) 
             ram[i_addr] <= i_data_in;
-        end
-    end
-end
-always @(posedge i_clk_cpu) begin
-    if (i_ce) begin
+always @(posedge i_clk_cpu)
         // Synchronous read: The output register is updated with the data at the address
         // one clock cycle after the address is stable and CE is high.
         o_data_out <= ram[i_addr];
-    end
-end
 
 endmodule

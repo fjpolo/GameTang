@@ -1,36 +1,35 @@
 // GAMETANK video and sound to HDMI converter
 // nand2mario, 2022.9
+// Updated for native GameTank R2G2B2 color conversion (R8G8B8 direct mapping).
 
 `timescale 1ns / 1ps
 
 module gametank2hdmi (
-	input clk,      // gametank clock
-	input resetn,
+    input wire clk,       // gametank clock
+    input wire resetn,
 
     // gametank video signals
-    input [5:0] color,
-    input [8:0] cycle,
-    input [8:0] scanline,
-    input [15:0] sample,
-    input aspect_8x7,       // 1: 8x7 pixel aspect ratio mode
+    input wire [5:0] color,
+    input wire [8:0] cycle,
+    input wire [8:0] scanline,
+    input wire [15:0] sample,
+    input wire aspect_8x7,      // 1: 8x7 pixel aspect ratio mode
 
     // overlay interface
-    input overlay,
-    output [7:0] overlay_x,
-    output [7:0] overlay_y,
-    input [14:0] overlay_color, // BGR5
+    input  wire overlay,
+    output wire  [7:0] overlay_x,
+    output wire  [7:0] overlay_y,
+    input  wire  [14:0] overlay_color, // BGR5
 
-	// video clocks
-	input clk_pixel,
-	input clk_5x_pixel,
+    // video clocks
+    input wire clk_pixel,
+    input wire clk_5x_pixel,
 
-    // output [7:0] led,
-
-	// output signals
-	output       tmds_clk_n,
-	output       tmds_clk_p,
-	output [2:0] tmds_d_n,
-	output [2:0] tmds_d_p
+    // output signals
+    output wire        tmds_clk_n,
+    output wire        tmds_clk_p,
+    output wire [2:0] tmds_d_n,
+    output wire [2:0] tmds_d_p
 );
 
 // GAMETANK generates 256x240. We assume the center 256x224 is visible and scale that to 4:3 aspect ratio.
@@ -44,12 +43,6 @@ localparam SCALE = 5;
 localparam VIDEOID = 4;
 localparam VIDEO_REFRESH = 60.0;
 
-// localparam IDIV_SEL_X5 = 3;
-// localparam FBDIV_SEL_X5 = 54;
-// localparam ODIV_SEL_X5 = 2;
-// localparam DUTYDA_SEL_X5 = "1000";
-// localparam DYN_SDIV_SEL_X5 = 2;
-  
 localparam CLKFRQ = 74250;
 
 localparam COLLEN = 80;
@@ -69,13 +62,13 @@ wire [10:0] cx, frameWidth;
 localparam MEM_DEPTH=256*240;
 localparam MEM_ABITS=16;
 
-logic [5:0] mem [0:256*240-1];
+logic [5:0] mem [0:256*240-1] /*synthesis syn_ramstyle="block_ram"*/;
 logic [15:0] mem_portA_addr;
 logic [5:0] mem_portA_wdata;
 logic mem_portA_we;
 
 wire [15:0] mem_portB_addr;
-logic [5:0] mem_portB_rdata;
+logic [5:0] mem_portB_rdata; // 6-bit RRGGBB color index
 
 // BRAM port A read/write
 always_ff @(posedge clk) begin
@@ -111,8 +104,6 @@ always @(posedge clk) begin
 end
 
 // audio stuff
-//    localparam AUDIO_RATE=32000;        // weird only 32K sampling rate works
-//    localparam AUDIO_RATE=96000;
 localparam AUDIO_RATE=48000;
 localparam AUDIO_CLK_DELAY = CLKFRQ * 1000 / AUDIO_RATE / 2;
 logic [$clog2(AUDIO_CLK_DELAY)-1:0] audio_divider;
@@ -129,7 +120,7 @@ begin
 end
 
 reg [15:0] audio_sample_word [1:0], audio_sample_word0 [1:0];
-always @(posedge clk_pixel) begin       // crossing clock domain
+always @(posedge clk_pixel) begin      // crossing clock domain
     audio_sample_word0[0] <= sample;
     audio_sample_word[0] <= audio_sample_word0[0];
     audio_sample_word0[1] <= sample;
@@ -143,11 +134,11 @@ end
 localparam WIDTH=256;
 localparam HEIGHT=240;
 reg [23:0] rgb;             // actual RGB output
-reg active                  /* xsynthesis syn_keep=1 */;
+reg active              /* xsynthesis syn_keep=1 */;
 reg [$clog2(WIDTH)-1:0] xx  /* xsynthesis syn_keep=1 */; // scaled-down pixel position
 reg [$clog2(HEIGHT)-1:0] yy /* xsynthesis syn_keep=1 */;
 reg [10:0] xcnt             /* xsynthesis syn_keep=1 */;
-reg [10:0] ycnt             /* xsynthesis syn_keep=1 */;                  // fractional scaling counters
+reg [10:0] ycnt             /* xsynthesis syn_keep=1 */;          // fractional scaling counters
 reg [9:0] cy_r;
 assign mem_portB_addr = yy * WIDTH + xx + 8*256;
 assign overlay_x = xx;
@@ -203,66 +194,68 @@ always @(posedge clk_pixel) begin
 
 end
 
+// --- GameTank Color Conversion Logic (R2G2B2 to R8G8B8) ---
+// The GameTank 6-bit color is typically R[5:4] G[3:2] B[1:0].
+// R8 = R2 is implemented using bit replication (V2 -> V2V2V2V2).
+wire [5:0] gametank_color_index = mem_portB_rdata;
+
+// Red (R[5:4]) -> R[7:0]
+wire [7:0] r_out = {gametank_color_index[5], gametank_color_index[4], gametank_color_index[5], gametank_color_index[4], gametank_color_index[5], gametank_color_index[4], gametank_color_index[5], gametank_color_index[4]};
+// Green (G[3:2]) -> G[7:0]
+wire [7:0] g_out = {gametank_color_index[3], gametank_color_index[2], gametank_color_index[3], gametank_color_index[2], gametank_color_index[3], gametank_color_index[2], gametank_color_index[3], gametank_color_index[2]};
+// Blue (B[1:0]) -> B[7:0]
+wire [7:0] b_out = {gametank_color_index[1], gametank_color_index[0], gametank_color_index[1], gametank_color_index[0], gametank_color_index[1], gametank_color_index[0], gametank_color_index[1], gametank_color_index[0]};
+
+wire [23:0] gametank_rgb = {r_out, g_out, b_out};
+
 // calc rgb value to hdmi
-reg [23:0] GAMETANK_PALETTE [0:63];
 always @(posedge clk_pixel) begin
     if (active) begin
         if (overlay)
-            rgb <= {overlay_color[4:0],3'b0,overlay_color[9:5],3'b0,overlay_color[14:10],3'b0};       // BGR5 to RGB8
+            // Overlay color is BGR5 (15-bit) which is expanded to R8G8B8
+            rgb <= {overlay_color[4:0],3'b0,overlay_color[9:5],3'b0,overlay_color[14:10],3'b0}; 
         else
-            rgb <= GAMETANK_PALETTE[mem_portB_rdata];
+            // Use the calculated R2G2B2 to R8G8B8 color
+            rgb <= gametank_rgb;
     end else
-        rgb <= 24'h303030;
+        rgb <= 24'h303030; // Border color
 end
 
 // HDMI output.
 logic[2:0] tmds;
+wire tmdsClk; // Need to define tmdsClk wire for the ELVDS_OBUF block
 
 hdmi #( .VIDEO_ID_CODE(VIDEOID), 
-        .DVI_OUTPUT(0), 
-        .VIDEO_REFRESH_RATE(VIDEO_REFRESH),
-        .IT_CONTENT(1),
-        .AUDIO_RATE(AUDIO_RATE), 
-        .AUDIO_BIT_WIDTH(AUDIO_BIT_WIDTH),
-        .START_X(0),
-        .START_Y(0) )
+         .DVI_OUTPUT(0), 
+         .VIDEO_REFRESH_RATE(VIDEO_REFRESH),
+         .IT_CONTENT(1),
+         .AUDIO_RATE(AUDIO_RATE), 
+         .AUDIO_BIT_WIDTH(AUDIO_BIT_WIDTH),
+         .START_X(0),
+         .START_Y(0) )
 
 hdmi( .clk_pixel_x5(clk_5x_pixel), 
-        .clk_pixel(clk_pixel), 
-        .clk_audio(clk_audio),
-        .rgb(rgb), 
-        .reset( 0 ),
-        .audio_sample_word(audio_sample_word),
-        .tmds(tmds), 
-        .tmds_clock(tmdsClk), 
-        .cx(cx), 
-        .cy(cy),
-        .frame_width( frameWidth ),
-        .frame_height( frameHeight ) );
+      .clk_pixel(clk_pixel), 
+      .clk_audio(clk_audio),
+      .rgb(rgb), 
+      .reset( 0 ),
+      .audio_sample_word(audio_sample_word),
+      .tmds(tmds), 
+      .tmds_clock(tmdsClk), 
+      .cx(cx), 
+      .cy(cy),
+      .frame_width( frameWidth ),
+      .frame_height( frameHeight ) );
 
 // Gowin LVDS output buffer
+// Note: Gowin-specific primitive 'ELVDS_OBUF' is assumed to be defined elsewhere in the project environment.
 ELVDS_OBUF tmds_bufds [3:0] (
     .I({clk_pixel, tmds}),
     .O({tmds_clk_p, tmds_d_p}),
     .OB({tmds_clk_n, tmds_d_n})
 );
 
-// 2C02 palette: https://www.gametankdev.org/wiki/PPU_palettes
-assign GAMETANK_PALETTE[0] = 24'h545454;  assign GAMETANK_PALETTE[1] = 24'h001e74;  assign GAMETANK_PALETTE[2] = 24'h081090;  assign GAMETANK_PALETTE[3] = 24'h300088;  
-assign GAMETANK_PALETTE[4] = 24'h440064;  assign GAMETANK_PALETTE[5] = 24'h5c0030;  assign GAMETANK_PALETTE[6] = 24'h540400;  assign GAMETANK_PALETTE[7] = 24'h3c1800;
-assign GAMETANK_PALETTE[8] = 24'h202a00;  assign GAMETANK_PALETTE[9] = 24'h083a00;  assign GAMETANK_PALETTE[10] = 24'h004000;  assign GAMETANK_PALETTE[11] = 24'h003c00;  
-assign GAMETANK_PALETTE[12] = 24'h00323c;  assign GAMETANK_PALETTE[13] = 24'h000000;  assign GAMETANK_PALETTE[14] = 24'h000000;  assign GAMETANK_PALETTE[15] = 24'h000000;
-assign GAMETANK_PALETTE[16] = 24'h989698;  assign GAMETANK_PALETTE[17] = 24'h084cc4;  assign GAMETANK_PALETTE[18] = 24'h3032ec;  assign GAMETANK_PALETTE[19] = 24'h5c1ee4;  
-assign GAMETANK_PALETTE[20] = 24'h8814b0;  assign GAMETANK_PALETTE[21] = 24'ha01464;  assign GAMETANK_PALETTE[22] = 24'h982220;  assign GAMETANK_PALETTE[23] = 24'h783c00;
-assign GAMETANK_PALETTE[24] = 24'h545a00;  assign GAMETANK_PALETTE[25] = 24'h287200;  assign GAMETANK_PALETTE[26] = 24'h087c00;  assign GAMETANK_PALETTE[27] = 24'h007628; 
-assign GAMETANK_PALETTE[28] = 24'h006678;  assign GAMETANK_PALETTE[29] = 24'h000000;  assign GAMETANK_PALETTE[30] = 24'h000000;  assign GAMETANK_PALETTE[31] = 24'h000000;
-assign GAMETANK_PALETTE[32] = 24'heceeec;  assign GAMETANK_PALETTE[33] = 24'h4c9aec;  assign GAMETANK_PALETTE[34] = 24'h787cec;  assign GAMETANK_PALETTE[35] = 24'hb062ec;  
-assign GAMETANK_PALETTE[36] = 24'he454ec;  assign GAMETANK_PALETTE[37] = 24'hec58b4;  assign GAMETANK_PALETTE[38] = 24'hec6a64;  assign GAMETANK_PALETTE[39] = 24'hd48820;
-assign GAMETANK_PALETTE[40] = 24'ha0aa00;  assign GAMETANK_PALETTE[41] = 24'h74c400;  assign GAMETANK_PALETTE[42] = 24'h4cd020;  assign GAMETANK_PALETTE[43] = 24'h38cc6c; 
-assign GAMETANK_PALETTE[44] = 24'h38b4cc;  assign GAMETANK_PALETTE[45] = 24'h3c3c3c;  assign GAMETANK_PALETTE[46] = 24'h000000;  assign GAMETANK_PALETTE[47] = 24'h000000;
-assign GAMETANK_PALETTE[48] = 24'heceeec;  assign GAMETANK_PALETTE[49] = 24'ha8ccec;  assign GAMETANK_PALETTE[50] = 24'hbcbcec;  assign GAMETANK_PALETTE[51] = 24'hd4b2ec;
-assign GAMETANK_PALETTE[52] = 24'hecaeec;  assign GAMETANK_PALETTE[53] = 24'hecaed4;  assign GAMETANK_PALETTE[54] = 24'hecb4b0;  assign GAMETANK_PALETTE[55] = 24'he4c490;
-assign GAMETANK_PALETTE[56] = 24'hccd278;  assign GAMETANK_PALETTE[57] = 24'hb4de78;  assign GAMETANK_PALETTE[58] = 24'ha8e290;  assign GAMETANK_PALETTE[59] = 24'h98e2b4;
-assign GAMETANK_PALETTE[60] = 24'ha0d6e4;  assign GAMETANK_PALETTE[61] = 24'ha0a2a0;  assign GAMETANK_PALETTE[62] = 24'h000000;  assign GAMETANK_PALETTE[63] = 24'h000000;
+// Note: The previous 2C02 palette assignment block has been removed, 
+// as the correct GameTank R2G2B2 color is now calculated directly above.
 
 endmodule

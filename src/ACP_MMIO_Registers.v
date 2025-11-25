@@ -13,7 +13,7 @@ module ACP_MMIO_Registers (
 
     output wire [7:0] o_data_out,   // Data read by CPU
     output wire o_irq               // APU Interrupt Request to CPU
-);
+) /*synthesis syn_ramstyle="block_ram"*/;
 
     // Register storage (16 registers: $4000-$400F, $4010-$4013, $4015, $4017)
     // We will use a simple array to model the writable registers.

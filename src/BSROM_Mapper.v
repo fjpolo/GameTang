@@ -7,39 +7,51 @@ module BSROM_Mapper (
     input wire [15:0] i_addr, // Full CPU address
     // input wire [7:0] i_data_in, // Unused in NROM/BSROM (read-only)
 
-    output wire [7:0] o_data_out
+    output reg [7:0] o_data_out
 ) /*synthesis syn_ramstyle="block_ram"*/;
 
 // ROM size: 32KB (15-bit address, 8-bit data)
-// Address Range: $8000 - $FFFF (32KB)
-// Internal ROM array size is 32768 x 8
-reg [7:0] prg_rom [8191:0] /*synthesis syn_ramstyle="block_ram"*/;
+// Internal ROM array size is 32768 x 8 (indices 0 to 32767)
+reg [7:0] prg_rom [32767:0] /*synthesis syn_ramstyle="block_ram"*/;
 
 // Prg ROM Address calculation:
-// The 6502 addresses $8000-$FFFF (32KB). This maps directly to indices 0-32767.
-// We mask off the A15 bit, as $8000 (1000 0000 0000 0000) corresponds to index 0.
+// 6502 addresses $8000-$FFFF (32KB). Base address $8000.
+// We map the low 15 bits (A14:A0) directly to the ROM index.
 wire [14:0] prg_addr = i_addr[14:0]; 
 
-// Output is combinational (Read happens immediately)
-assign o_data_out = (i_ce && i_rnw) ? prg_rom[prg_addr] : 8'hFF;
+// Output is registered (D-Flip Flop on RAM output, typical for BRAM inference)
+wire read_enable = (i_ce)&&(i_rnw);
+always @(posedge i_clk_cpu) begin
+    if(read_enable) begin
+        // The output registers the data read from the ROM array
+        o_data_out <= prg_rom[prg_addr];
+    end else if (!i_ce) begin
+        // If chip is not enabled, output float/default value (0xFF)
+        // This 'else if' is important since we need to ensure the register
+        // holds a defined value when not reading the ROM.
+        o_data_out <= 8'hFF;
+    end
+end
 
 
 // --- Initial Block to load the simple test program ---
-// The $readmemh function loads the hex data into the Verilog array.
-// It loads data from the index corresponding to the CPU address $8000 up to $FFFF.
 initial begin
-  prg_rom[0] = 8'hA9; prg_rom[1] = 8'h60; prg_rom[2] = 8'h8D; prg_rom[3] = 8'h07; prg_rom[4] = 8'h20; prg_rom[5] = 8'h9C; prg_rom[6] = 8'h05; prg_rom[7] = 8'h20; 
-  prg_rom[8] = 8'hA9; prg_rom[9] = 8'h00; prg_rom[10] = 8'hA2; prg_rom[11] = 8'h00; prg_rom[12] = 8'h9D; prg_rom[13] = 8'h00; prg_rom[14] = 8'h50; prg_rom[15] = 8'hE8; 
-  prg_rom[16] = 8'h4C; prg_rom[17] = 8'h0C; prg_rom[18] = 8'hE0; prg_rom[19] = 8'h40; prg_rom[20] = 8'h40;
-  prg_rom[8186] = 8'h14;
-  prg_rom[8186] = 8'h14;
-  prg_rom[8187] = 8'hE0;
-  prg_rom[8188] = 8'h00;
-  prg_rom[8189] = 8'hE0;
-  prg_rom[8190] = 8'h13;
-  prg_rom[8191] = 8'hE0;
+    
+    // Program at $8000 (index 0):
+    // The CPU stub is hardcoded to *simulate* PHA/PLA execution
+    // but the mapper must still provide the correct opcodes for the fetch cycle.
+    prg_rom[16'h8000 - 16'h8000] = 8'h48; // $8000: PHA (Push Accumulator)
+    prg_rom[16'h8001 - 16'h8000] = 8'h68; // $8001: PLA (Pull Accumulator)
+    prg_rom[16'h8002 - 16'h8000] = 8'hEA; // $8002: NOP
 
+    // Reset Vector: $FFFC/$FFFD maps to indices 32764 and 32765
+    // Set PC to start at $8000 (index 0)
+    prg_rom[32764] = 8'h00; // $FFFC (Reset Vector Low - points to $8000)
+    prg_rom[32765] = 8'h80; // $FFFD (Reset Vector High - points to $8000)
+
+    // Fill the very end of the ROM
+    prg_rom[32766] = 8'hEA; 
+    prg_rom[32767] = 8'hEA; 
 end
-
 
 endmodule

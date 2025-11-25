@@ -1,6 +1,6 @@
 //-------------------------------------------------------------------------
 // GameTank_test_top.v
-// Top-level module combining WCD6502 CPU Stub.
+// Top-level module combining WCD6502 CPU Stub and BSROM_Mapper.
 //-------------------------------------------------------------------------
 
 `timescale 1ns / 1ps
@@ -39,31 +39,23 @@ module GameTank_test_top (
 
     wire reset_n = ~reset2 /*synthesis syn_keep=1*/;
     
-    // CPU Inputs (Active Low unless noted)
-    wire nNMI /*synthesis syn_keep=1*/;
-    wire nIRQ /*synthesis syn_keep=1*/;
-    wire nSO /*synthesis syn_keep=1*/;
-    wire RdyIn /*synthesis syn_keep=1*/;
+    // CPU Inputs (Active Low unless noted) - Not used by WCD6502, kept for compatibility
+    wire nNMI  = 1'b1 /*synthesis syn_keep=1*/;
+    wire nIRQ  = 1'b1 /*synthesis syn_keep=1*/;
+    wire nSO   = 1'b1 /*synthesis syn_keep=1*/;
+    wire RdyIn = 1'b1 /*synthesis syn_keep=1*/;
     
-    // CPU Outputs
-    wire nVP /*synthesis syn_keep=1*/;
-    wire Sync /*synthesis syn_keep=1*/;
-    wire nML /*synthesis syn_keep=1*/;
+    // CPU Outputs (Not all are driven by WCD6502, but kept for full interface)
+    wire nVP = 1'b1 /*synthesis syn_keep=1*/; // Not driven
+    wire Sync = 1'b0 /*synthesis syn_keep=1*/; // Not driven
+    wire nML = 1'b1 /*synthesis syn_keep=1*/; // Not driven
     wire [15:0] AB /*synthesis syn_keep=1*/;             // Address Bus
-    wire [3:0] nCE /*synthesis syn_keep=1*/;             // Decoded Chip Selects
     wire nRD /*synthesis syn_keep=1*/;                   // Read Strobe (Active Low)
     wire nWR /*synthesis syn_keep=1*/;                   // Write Strobe (Active Low)
-    wire [3:0] XA /*synthesis syn_keep=1*/;              // Extended Physical Address
 
-    // **Data Bus Wires**
-    wire [7:0] cpu_db_out /*synthesis syn_preserve=1*/;  // Data driven BY the CPU (WCD6502.DB)
-    wire [7:0] DB_read_in /*synthesis syn_preserve=1*/;  // Data seen BY the CPU (WCD6502.DB_IN)
-    
-    // **NEW: Stack Pointer Output from CPU Stub**
-    wire [7:0] cpu_sp_out; 
-
-    // --- Signals for I/O Port Stubs (M65C02A legacy ports, now unused) ---
-    // The WCD6502 stub does NOT support these ports, but we keep the wires for LED monitoring.
+    // CPU Outputs (M65C02A legacy ports, left unconnected from WCD6502)
+    wire [3:0] nCE = 4'b1111 /*synthesis syn_keep=1*/;
+    wire [3:0] XA = 4'b0000 /*synthesis syn_keep=1*/;
     wire [1:0] nSSel;
     wire SCK;
     wire MOSI;
@@ -71,76 +63,81 @@ module GameTank_test_top (
     wire COM1_nRTS;
     wire COM1_DE;
 
-
-    // --- Test Harness Initialization (Dummy Signals) ---
-    // Set unused CPU inputs to safe/inactive values
-    assign nNMI  = 1'b1;  // De-assert NMI
-    assign nIRQ  = 1'b1;  // De-assert IRQ
-    assign nSO   = 1'b1;  // De-assert Set Overflow
-    assign RdyIn = 1'b1;  // Ready to drive bus (No wait states)
+    // **Data Bus Wires**
+    wire [7:0] cpu_db_out /*synthesis syn_preserve=1*/;  // Data driven BY the CPU (WCD6502.DB - Write Data)
+    wire [7:0] DB_read_in /*synthesis syn_preserve=1*/;  // Data seen BY the CPU (WCD6502.DB_IN - Read Data)
     
-    // Tie unused input ports to safe values
-    wire COM0_nCTS = 1'b1;
-    wire COM1_nCTS = 1'b1;
-    wire MISO = 1'b1;
-    assign UART_TXD = COM0_TxD; 
-    wire COM1_TxD_dummy; 
+    // **Stack Pointer Output from CPU Stub**
+    wire [7:0] cpu_sp_out; 
 
-    // --- 2. Memory/Peripheral Stub (Replaces Arbiter Logic) ---
-    
-    // ROM Stub: Connect the CPU's read input to a constant for the reset vector.
-    assign DB_read_in = 8'hFF; 
+    // --- Mapper Control Wires ---
+    wire rom_ce;    // Chip Enable for the ROM
+    wire rom_rnw;   // Read/Not Write for the ROM (1=Read)
+    wire [7:0] rom_data_out; // Data output from the ROM
 
+    // --- 2. Minimal Bus Control Unit (BCU) Logic ---
+
+    // 2a. ROM Selection (BSROM is now 32KB: $8000 - $FFFF)
+    // The ROM is selected if A15 is high.
+    assign rom_ce = AB[15];
+
+    // 2b. Read/Not Write Signal (Active High for Read)
+    // CPU reads when nRD is low. The mapper needs i_rnw high for a read.
+    assign rom_rnw = !nRD; 
+
+    // 2c. Data Bus Connection (Multiplexer Logic)
+    // The CPU read input (DB_read_in) comes from either the ROM or a default value.
+    // NOTE: Because the mapper output is now clocked (registered), the data will
+    // be valid one clock cycle after the address is stable. We still connect it
+    // directly here, assuming the CPU handles the delay or the tool handles the 
+    // registered path correctly.
+    assign DB_read_in = rom_data_out; // The mapper provides the 0xFF default when i_ce is low.
     
     // --- 3. Component Instantiation ---
 
-    // 3a. Instantiate WCD6502 CPU Stub (Replaces M65C02A)
+    // 3a. Instantiate WCD6502 CPU Stub
     WCD6502 u_cpu (
-        // Clock and Reset
-        .Clk   (sys_clk),
-        .nRst  (!reset_n), // Map active-low i_rst_n to nRst
-        
-        // Bus Interface (Outputs)
-        .AB    (AB),
-        .DB    (cpu_db_out),      // CPU Write Data Output (was DB)
-        .nRD   (nRD),
-        .nWR   (nWR),
-        
-        // Bus Interface (Inputs)
-        .DB_IN (DB_read_in),      // CPU Read Data Input (was DB_IN)
-        
-        // CPU Status
-        .Status_SP (cpu_sp_out)   // NEW: Stack Pointer output
-        
-        // WCD6502 does not have the other ports (nNMI, nIRQ, nVP, etc.)
+        .Clk       (sys_clk),
+        .nRst      (!reset_n),
+        .AB        (AB),
+        .DB        (cpu_db_out),      // CPU Write Data Output
+        .nRD       (nRD),
+        .nWR       (nWR),
+        .DB_IN     (DB_read_in),      // CPU Read Data Input (fed from BCU/Mapper)
+        .Status_SP (cpu_sp_out)       // Stack Pointer Status
     );
     
-    // --- 4. LED Assignment Update (Monitor SP) ---
+    // 3b. Instantiate BSROM_Mapper
+    BSROM_Mapper u_rom_mapper (
+        .i_clk_cpu (sys_clk),
+        .i_ce      (rom_ce),          // Connected via BCU logic
+        .i_rnw     (rom_rnw),         // Connected via BCU logic
+        .i_addr    (AB),              // Full Address Bus
+        .o_data_out(rom_data_out)     // Data back to the BCU/CPU read bus
+    );
 
-    // LED[0] now XORs all major bus and control signals, including the new Stack Pointer (cpu_sp_out).
+    // --- 4. LED Assignments ---
+
+    // LED[0] monitors the state of the bus and the SP register (XOR of all bits)
     assign led[0] = 
-                (|nVP)^           // (CPU Outputs)
-                (|Sync)^
-                (|nML)^
                 (|AB)^            // Address Bus
                 (|nRD)^           // Read Strobe
                 (|nWR)^           // Write Strobe
-                (|cpu_db_out)^    // Write data
-                (|DB_read_in)^    // Read data
-                (|cpu_sp_out);    // **NEW: Stack Pointer Value**
+                (|cpu_db_out)^    // CPU Write Data
+                (|DB_read_in)^    // CPU Read Data
+                (|cpu_sp_out);    // Stack Pointer Value
 
-    // The following signals are not driven by WCD6502, so their contribution to led[0] 
-    // is based on their assigned values (mostly 1'b1 or unconnected wires, which default to 'z' or '0').
-    // We remove them to reflect the minimal connections of the WCD6502 stub.
-    /*
-                (|nCE)^
-                (|XA)^
-                (|nSSel)^
-                (|SCK)^
-                (|MOSI)^
-                (|COM0_TxD)^
-                (|COM1_nRTS)^
-                (|COM1_DE);
-    */
+    // LED[1-7] can show the status of the Stack Pointer
+    assign led[7:1] = cpu_sp_out[6:0]; 
+    
+    // Dummy connections for unused UART/SPI ports (required for synthesis if they are outputs)
+    assign nSSel = 2'b11;
+    assign SCK = 1'b0;
+    assign MOSI = 1'b0;
+    assign COM0_TxD = 1'b0;
+    assign COM1_nRTS = 1'b1;
+    assign COM1_DE = 1'b0;
+
+    assign UART_TXD = COM0_TxD; 
     
 endmodule

@@ -1,0 +1,38 @@
+<?xml version="1" encoding="UTF-8"?>
+<GAO_CONFIG>
+    <Version>3.0</Version>
+    <Mode>Lite</Mode>
+    <AoCore_Lite index="0" sample_clock="sys_clk" trig_type="0" capture_amount="2048" implemention="0" input_register_enabled="1" capture_init_data_enabled="1" module_name="GameTank_test_top">
+        <SignalList>
+            <Bus capture_enable="true" name="u_cpu/PC[15:0]">
+                <Signal>u_cpu/PC[15]</Signal>
+                <Signal>u_cpu/PC[14]</Signal>
+                <Signal>u_cpu/PC[13]</Signal>
+                <Signal>u_cpu/PC[12]</Signal>
+                <Signal>u_cpu/PC[11]</Signal>
+                <Signal>u_cpu/PC[10]</Signal>
+                <Signal>u_cpu/PC[9]</Signal>
+                <Signal>u_cpu/PC[8]</Signal>
+                <Signal>u_cpu/PC[7]</Signal>
+                <Signal>u_cpu/PC[6]</Signal>
+                <Signal>u_cpu/PC[5]</Signal>
+                <Signal>u_cpu/PC[4]</Signal>
+                <Signal>u_cpu/PC[3]</Signal>
+                <Signal>u_cpu/PC[2]</Signal>
+                <Signal>u_cpu/PC[1]</Signal>
+                <Signal>u_cpu/PC[0]</Signal>
+            </Bus>
+            <Bus capture_enable="true" name="IR[7:0]">
+                <Signal>IR[7]</Signal>
+                <Signal>IR[6]</Signal>
+                <Signal>IR[5]</Signal>
+                <Signal>IR[4]</Signal>
+                <Signal>IR[3]</Signal>
+                <Signal>IR[2]</Signal>
+                <Signal>IR[1]</Signal>
+                <Signal>IR[0]</Signal>
+            </Bus>
+        </SignalList>
+    </AoCore_Lite>
+    <GAO_ID>0100100100111101</GAO_ID>
+</GAO_CONFIG>

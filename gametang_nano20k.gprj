@@ -69,8 +69,7 @@
         <File path="src/uart_tx_V2.v" type="file.verilog" enable="1"/>
         <File path="src/boards/nano20k.cst" type="file.cst" enable="1"/>
         <File path="src/boards/nano20k.sdc" type="file.sdc" enable="1"/>
-        <File path="src/gametang_nano20k__joystick_EN.gao" type="file.gao" enable="0"/>
-        <File path="src/gametank.gao" type="file.gao" enable="0"/>
+        <File path="src/gametang_nano20k__WCD6502_PCreg.gao" type="file.gao" enable="1"/>
         <File path="src/00_draw_a_pixel.hex" type="file.other" enable="1"/>
         <File path="src/nano20k.gcs" type="file.other" enable="1"/>
     </FileList>

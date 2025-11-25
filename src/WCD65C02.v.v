@@ -21,14 +21,16 @@ module WCD6502 (
     input wire [7:0] DB_IN,  // Data Bus (CPU Read Data - Used on read cycles)
 
     // CPU Internal Status (minimal outputs)
-    output [7:0] Status_SP
+    output [7:0] Status_SP,
+    output [7:0] Instruction_IR // New: Instruction Register for monitoring fetched opcode
 );
 
 // --- Internal Registers ---
-reg [15:0] PC;   // Program Counter
-reg [7:0] A;     // Accumulator
-reg [7:0] SP;    // Stack Pointer
-reg [2:0] state; // Simple state counter for simulation
+reg [15:0] PC /*synthesis syn_keep=1*/;   // Program Counter
+reg [7:0] A /*synthesis syn_keep=1*/;     // Accumulator
+reg [7:0] SP /*synthesis syn_keep=1*/;    // Stack Pointer
+reg [7:0] IR /*synthesis syn_keep=1*/;    // Instruction Register (New)
+reg [2:0] state /*synthesis syn_keep=1*/; // Simple state counter for simulation
 
 // --- Constants ---
 // State machine for simulating instruction execution
@@ -42,6 +44,7 @@ localparam STATE_IDLE = 3'd6;       // Halt
 
 // --- Outputs ---
 assign Status_SP = SP;
+assign Instruction_IR = IR; // Connect IR to the new output port
 
 // --- State and Bus Control Logic (Clocked) ---
 always @(posedge Clk or negedge nRst) begin
@@ -50,6 +53,7 @@ always @(posedge Clk or negedge nRst) begin
         PC <= 16'hFFFF; 
         SP <= 8'hFD;    
         A <= 8'hAA;     // Test value for Push
+        IR <= 8'h00;    // Reset IR
         state <= STATE_RESET_L;
         
         // De-assert control signals
@@ -61,6 +65,14 @@ always @(posedge Clk or negedge nRst) begin
         // Default: de-assert control signals
         nRD <= 1'b1;
         nWR <= 1'b1;
+        
+        // Capture data from the bus during the previous read cycle
+        // This simulates latching the instruction into the IR
+        if (state == STATE_RESET_H || state == STATE_PUSH_PHA) begin
+            // Capture the fetched opcode (48h or 68h) after the read cycle ends.
+            // Note: DB_IN holds the value read during the *previous* state's read cycle.
+            IR <= DB_IN;
+        end
         
         case (state)
             STATE_RESET_L: begin

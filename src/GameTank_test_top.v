@@ -69,6 +69,8 @@ module GameTank_test_top (
     
     // **Stack Pointer Output from CPU Stub**
     wire [7:0] cpu_sp_out; 
+    // **Instruction Register Output from CPU Stub**
+    wire [7:0] cpu_ir_out; // New wire for Instruction Register
 
     // --- Mapper Control Wires ---
     wire rom_ce;    // Chip Enable for the ROM
@@ -104,7 +106,8 @@ module GameTank_test_top (
         .nRD       (nRD),
         .nWR       (nWR),
         .DB_IN     (DB_read_in),      // CPU Read Data Input (fed from BCU/Mapper)
-        .Status_SP (cpu_sp_out)       // Stack Pointer Status
+        .Status_SP (cpu_sp_out),       // Stack Pointer Status
+        .Instruction_IR (cpu_ir_out) // New connection for Instruction Register
     );
     
     // 3b. Instantiate BSROM_Mapper
@@ -118,6 +121,10 @@ module GameTank_test_top (
 
     // --- 4. LED Assignments ---
 
+    // Display the fetched Instruction Register (IR) value on all 8 LEDs.
+    assign led = cpu_ir_out;
+
+    /* Old LED assignments (commented out):
     // LED[0] monitors the state of the bus and the SP register (XOR of all bits)
     assign led[0] = 
                 (|AB)^            // Address Bus
@@ -129,6 +136,7 @@ module GameTank_test_top (
 
     // LED[1-7] can show the status of the Stack Pointer
     assign led[7:1] = cpu_sp_out[6:0]; 
+    */
     
     // Dummy connections for unused UART/SPI ports (required for synthesis if they are outputs)
     assign nSSel = 2'b11;
